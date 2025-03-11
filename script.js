@@ -94,18 +94,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
   filterButtons.forEach((button) => {
     button.addEventListener("click", function () {
-      // Remove active class from all buttons
+      const filter = this.getAttribute("data-filter");
+
+      // Update ARIA attributes for accessibility
       filterButtons.forEach((btn) => {
+        // Update visual styling
         btn.classList.remove("active", "bg-primary", "text-white");
         btn.classList.add("bg-gray-200");
+
+        // Update ARIA attributes
+        btn.setAttribute("aria-selected", "false");
       });
 
       // Add active class to clicked button
       this.classList.add("active", "bg-primary", "text-white");
       this.classList.remove("bg-gray-200");
+      this.setAttribute("aria-selected", "true");
 
-      const filter = this.getAttribute("data-filter");
-
+      // Filter projects based on category
       projectCards.forEach((card) => {
         // Show all cards if filter is "all"
         if (filter === "all") {
@@ -134,6 +140,20 @@ document.addEventListener("DOMContentLoaded", function () {
           }, 300);
         }
       });
+
+      // Announce filter change for screen readers
+      const filterAnnouncement = document.createElement("div");
+      filterAnnouncement.setAttribute("aria-live", "polite");
+      filterAnnouncement.classList.add("sr-only");
+      filterAnnouncement.textContent = `Filtered by ${
+        filter === "all" ? "all projects" : filter + " projects"
+      }`;
+      document.body.appendChild(filterAnnouncement);
+
+      // Remove announcement after it's been read
+      setTimeout(() => {
+        document.body.removeChild(filterAnnouncement);
+      }, 1000);
     });
   });
 
@@ -145,6 +165,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalTitle = document.getElementById("modal-title");
   const modalContent = document.getElementById("modal-content");
   const closeModalButton = document.getElementById("close-modal");
+
+  // Store the element that had focus before opening the modal
+  let previouslyFocusedElement;
 
   // Project data
   const projectsData = {
@@ -242,41 +265,24 @@ document.addEventListener("DOMContentLoaded", function () {
       const projectId = projectCard.getAttribute("data-project-id");
       const project = projectsData[projectId];
 
+      // Store current focus for later restoration
+      previouslyFocusedElement = document.activeElement;
+
       // Set modal content
       modalTitle.textContent = project.title;
       modalContent.innerHTML = project.description;
 
-      // Show modal with animation
+      // Show modal with animation - using existing CSS classes
       projectModal.classList.remove("hidden");
-
-      // Define animation classes in Tailwind config
-      tailwind.config = {
-        theme: {
-          extend: {
-            ...tailwind.config.theme.extend,
-            animation: {
-              fadeIn: "fadeIn 0.3s ease-in-out",
-              fadeOut: "fadeOut 0.3s ease-in-out",
-            },
-            keyframes: {
-              fadeIn: {
-                "0%": { opacity: "0" },
-                "100%": { opacity: "1" },
-              },
-              fadeOut: {
-                "0%": { opacity: "1" },
-                "100%": { opacity: "0" },
-              },
-            },
-          },
-        },
-      };
-
-      // Apply animation
       projectModal.classList.add("animate-fadeIn");
 
       // Prevent body scrolling
       document.body.classList.add("overflow-hidden");
+
+      // Move focus to modal close button
+      setTimeout(() => {
+        closeModalButton.focus();
+      }, 100);
     });
   });
 
@@ -290,6 +296,11 @@ document.addEventListener("DOMContentLoaded", function () {
       projectModal.classList.remove("animate-fadeIn", "animate-fadeOut");
       // Re-enable body scrolling
       document.body.classList.remove("overflow-hidden");
+
+      // Restore focus to previously focused element
+      if (previouslyFocusedElement) {
+        previouslyFocusedElement.focus();
+      }
     }, 300);
   });
 
@@ -304,6 +315,29 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && !projectModal.classList.contains("hidden")) {
       closeModalButton.click();
+    }
+  });
+
+  // Trap focus within modal when open for accessibility
+  projectModal.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") {
+      // Get all focusable elements in modal
+      const focusableElements = projectModal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      // If shift+tab and on first element, go to last element
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      }
+      // If tab and on last element, go to first element
+      else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
     }
   });
 
@@ -327,27 +361,68 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Enhanced form submission with better user feedback
+  // Enhanced form validation and submission with better user feedback
   const contactForm = document.getElementById("contactForm");
   const formResponse = document.getElementById("form-response");
 
+  // Real-time validation
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
+  const messageInput = document.getElementById("message");
+
+  // Helper function to validate email format
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  // Add input validation with immediate feedback
+  emailInput.addEventListener("blur", function () {
+    if (this.value && !isValidEmail(this.value)) {
+      this.classList.add("border-red-500");
+      this.setAttribute("aria-invalid", "true");
+
+      // Add error message
+      let errorMsg = this.parentNode.querySelector(".error-message");
+      if (!errorMsg) {
+        errorMsg = document.createElement("p");
+        errorMsg.className = "text-red-500 text-sm mt-1 error-message";
+        errorMsg.id = "email-error";
+        this.setAttribute("aria-describedby", "email-error");
+        this.parentNode.appendChild(errorMsg);
+      }
+      errorMsg.textContent = "Please enter a valid email address";
+    } else {
+      this.classList.remove("border-red-500");
+      this.setAttribute("aria-invalid", "false");
+
+      // Remove error message if exists
+      const errorMsg = this.parentNode.querySelector(".error-message");
+      if (errorMsg) {
+        this.removeAttribute("aria-describedby");
+        errorMsg.remove();
+      }
+    }
+  });
+
+  // Form submission handling
   contactForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
     // Form validation
-    const name = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const message = document.getElementById("message").value.trim();
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const message = messageInput.value.trim();
 
     if (!name || !email || !message) {
-      showFormResponse("error", "Please fill in all fields");
+      showFormResponse("error", "Please fill in all required fields");
       return;
     }
 
-    // Email validation using regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Email validation
+    if (!isValidEmail(email)) {
       showFormResponse("error", "Please enter a valid email address");
+      emailInput.focus();
       return;
     }
 
@@ -381,6 +456,7 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => {
           submitButton.innerHTML = originalText;
           submitButton.disabled = false;
+          submitButton.focus(); // Return focus for accessibility
         }, 2000);
       },
       function (error) {
@@ -417,17 +493,14 @@ document.addEventListener("DOMContentLoaded", function () {
       formResponse.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
     }
 
+    // Set focus to the response for screen readers
+    formResponse.setAttribute("tabindex", "-1");
+    formResponse.focus();
+
     // Automatically hide the message after 5 seconds
     setTimeout(() => {
       formResponse.classList.add("hidden");
+      formResponse.removeAttribute("tabindex");
     }, 5000);
-  }
-
-  // Add simple dark mode toggle (bonus feature)
-  const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-
-  // Add theme toggle functionality if you want to implement a dark mode toggle button later
-  if (prefersDarkScheme.matches) {
-    document.body.classList.add("dark-mode");
   }
 });
