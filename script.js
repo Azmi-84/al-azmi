@@ -1,3 +1,6 @@
+// Import configuration with API keys
+import CONFIG from "./config.js";
+
 // Initialize AOS animation library
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize AOS animations
@@ -8,9 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
     mirror: false,
   });
 
-  // Initialize EmailJS
-  // Replace with your actual EmailJS public key once you create an account
-  emailjs.init("YOUR_PUBLIC_KEY");
+  // Initialize EmailJS with key from config file
+  emailjs.init(CONFIG.emailjs.publicKey);
 
   // Mobile menu toggle functionality
   const mobileMenuButton = document.getElementById("mobile-menu-button");
@@ -440,39 +442,41 @@ document.addEventListener("DOMContentLoaded", function () {
       message: message,
     };
 
-    // Send email using EmailJS
-    emailjs.send("service_id", "template_id", templateParams).then(
-      function (response) {
-        console.log("SUCCESS!", response.status, response.text);
-        showFormResponse(
-          "success",
-          "Your message has been sent. I'll get back to you soon!"
-        );
+    // Send email using EmailJS with config values
+    emailjs
+      .send(CONFIG.emailjs.serviceId, CONFIG.emailjs.templateId, templateParams)
+      .then(
+        function (response) {
+          console.log("SUCCESS!", response.status, response.text);
+          showFormResponse(
+            "success",
+            "Your message has been sent. I'll get back to you soon!"
+          );
 
-        // Reset form
-        contactForm.reset();
+          // Reset form
+          contactForm.reset();
 
-        // Reset button
-        setTimeout(() => {
-          submitButton.innerHTML = originalText;
-          submitButton.disabled = false;
-          submitButton.focus(); // Return focus for accessibility
-        }, 2000);
-      },
-      function (error) {
-        console.log("FAILED...", error);
-        showFormResponse(
-          "error",
-          "There was a problem sending your message. Please try again later."
-        );
+          // Reset button
+          setTimeout(() => {
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+            submitButton.focus(); // Return focus for accessibility
+          }, 2000);
+        },
+        function (error) {
+          console.log("FAILED...", error);
+          showFormResponse(
+            "error",
+            "There was a problem sending your message. Please try again later."
+          );
 
-        // Reset button
-        setTimeout(() => {
-          submitButton.innerHTML = originalText;
-          submitButton.disabled = false;
-        }, 2000);
-      }
-    );
+          // Reset button
+          setTimeout(() => {
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+          }, 2000);
+        }
+      );
   });
 
   // Helper function to show form response messages
