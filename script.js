@@ -137,6 +137,176 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // Project Details Modal Functionality
+  const projectDetailsButtons = document.querySelectorAll(
+    ".project-details-btn"
+  );
+  const projectModal = document.getElementById("project-modal");
+  const modalTitle = document.getElementById("modal-title");
+  const modalContent = document.getElementById("modal-content");
+  const closeModalButton = document.getElementById("close-modal");
+
+  // Project data
+  const projectsData = {
+    project1: {
+      title: "Material Microstructure Analysis",
+      description: `
+        <p class="mb-4">This project uses computer vision and deep learning techniques to analyze material microstructures and predict mechanical properties based on visual patterns in the material.</p>
+        
+        <h4 class="text-lg font-semibold mb-2">Challenge:</h4>
+        <p class="mb-4">Traditional methods for evaluating material properties are time-consuming and destructive. Our goal was to develop a non-destructive method using image analysis to predict properties accurately.</p>
+        
+        <h4 class="text-lg font-semibold mb-2">Methodology:</h4>
+        <ul class="list-disc pl-5 mb-4 space-y-1">
+          <li>Image preprocessing to enhance microstructure patterns</li>
+          <li>Feature extraction using convolutional neural networks</li>
+          <li>Transfer learning with pre-trained models (ResNet, VGG)</li>
+          <li>Regression models for property prediction</li>
+        </ul>
+        
+        <h4 class="text-lg font-semibold mb-2">Results:</h4>
+        <p class="mb-4">Our model achieved 92% accuracy in predicting material hardness and 87% accuracy for tensile strength based purely on microstructure images. This presents a significant advancement in non-destructive material testing.</p>
+        
+        <div class="flex flex-wrap gap-3 mt-6">
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Python</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">TensorFlow</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">OpenCV</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Materials Science</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">CNN</span>
+        </div>
+      `,
+    },
+    project2: {
+      title: "Marimo Notebook Implementation",
+      description: `
+        <p class="mb-4">A comprehensive implementation of Recurrent Neural Networks (RNN) from scratch using Marimo notebook, demonstrating the capabilities of this Jupyter alternative for data science workflows.</p>
+        
+        <h4 class="text-lg font-semibold mb-2">Challenge:</h4>
+        <p class="mb-4">Traditional notebooks can be difficult to maintain and share due to execution order issues and lack of modular components. We aimed to showcase how Marimo can address these limitations.</p>
+        
+        <h4 class="text-lg font-semibold mb-2">Implementation:</h4>
+        <ul class="list-disc pl-5 mb-4 space-y-1">
+          <li>Built RNN architectures from fundamental principles</li>
+          <li>Implemented LSTM and GRU cells with clear explanations</li>
+          <li>Created interactive visualizations of network training</li>
+          <li>Developed a time-series prediction application</li>
+          <li>Added interactive controls for hyperparameter tuning</li>
+        </ul>
+        
+        <h4 class="text-lg font-semibold mb-2">Key Features:</h4>
+        <p class="mb-4">The notebook includes interactive elements that allow users to adjust model parameters and immediately see results. The modular structure ensures reproducibility and easier understanding of complex neural network concepts.</p>
+        
+        <div class="flex flex-wrap gap-3 mt-6">
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Python</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Marimo</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">RNN</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Deep Learning</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Data Visualization</span>
+        </div>
+      `,
+    },
+    project3: {
+      title: "Mechanical Component Optimization",
+      description: `
+        <p class="mb-4">An algorithm that combines machine learning with finite element analysis to optimize mechanical component designs for specific performance characteristics while minimizing material usage.</p>
+        
+        <h4 class="text-lg font-semibold mb-2">Challenge:</h4>
+        <p class="mb-4">Traditional design optimization is computationally expensive and often relies on designer intuition. We aimed to create a data-driven approach that could explore more design possibilities efficiently.</p>
+        
+        <h4 class="text-lg font-semibold mb-2">Approach:</h4>
+        <ul class="list-disc pl-5 mb-4 space-y-1">
+          <li>Parameterized component geometry for variable optimization</li>
+          <li>Created surrogate models to predict FEA results without full simulation</li>
+          <li>Implemented genetic algorithms for multi-objective optimization</li>
+          <li>Developed a coupling between MATLAB optimization routines and FEA software</li>
+        </ul>
+        
+        <h4 class="text-lg font-semibold mb-2">Results:</h4>
+        <p class="mb-4">Our approach reduced design iteration time by 78% while producing components with 15% less material and equivalent or better performance. The ML-assisted optimization found novel design solutions that human designers had not considered.</p>
+        
+        <div class="flex flex-wrap gap-3 mt-6">
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">MATLAB</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">FEA</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">CAD</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Genetic Algorithms</span>
+          <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded">Optimization</span>
+        </div>
+      `,
+    },
+  };
+
+  // Open modal with project details
+  projectDetailsButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const projectCard = this.closest(".project-card");
+      const projectId = projectCard.getAttribute("data-project-id");
+      const project = projectsData[projectId];
+
+      // Set modal content
+      modalTitle.textContent = project.title;
+      modalContent.innerHTML = project.description;
+
+      // Show modal with animation
+      projectModal.classList.remove("hidden");
+
+      // Define animation classes in Tailwind config
+      tailwind.config = {
+        theme: {
+          extend: {
+            ...tailwind.config.theme.extend,
+            animation: {
+              fadeIn: "fadeIn 0.3s ease-in-out",
+              fadeOut: "fadeOut 0.3s ease-in-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              fadeOut: {
+                "0%": { opacity: "1" },
+                "100%": { opacity: "0" },
+              },
+            },
+          },
+        },
+      };
+
+      // Apply animation
+      projectModal.classList.add("animate-fadeIn");
+
+      // Prevent body scrolling
+      document.body.classList.add("overflow-hidden");
+    });
+  });
+
+  // Close modal
+  closeModalButton.addEventListener("click", function () {
+    // Add fadeOut animation
+    projectModal.classList.add("animate-fadeOut");
+
+    setTimeout(() => {
+      projectModal.classList.add("hidden");
+      projectModal.classList.remove("animate-fadeIn", "animate-fadeOut");
+      // Re-enable body scrolling
+      document.body.classList.remove("overflow-hidden");
+    }, 300);
+  });
+
+  // Close modal when clicking outside
+  projectModal.addEventListener("click", function (e) {
+    if (e.target === this) {
+      closeModalButton.click();
+    }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !projectModal.classList.contains("hidden")) {
+      closeModalButton.click();
+    }
+  });
+
   // Back to top button functionality
   const backToTopButton = document.getElementById("back-to-top");
 
