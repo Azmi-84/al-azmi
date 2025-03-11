@@ -88,11 +88,98 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Contact form submission handling with actual email sending
+  // Project filtering functionality
+  const filterButtons = document.querySelectorAll(".project-filter");
+  const projectCards = document.querySelectorAll(".project-card");
+
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      // Remove active class from all buttons
+      filterButtons.forEach((btn) => {
+        btn.classList.remove("active", "bg-primary", "text-white");
+        btn.classList.add("bg-gray-200");
+      });
+
+      // Add active class to clicked button
+      this.classList.add("active", "bg-primary", "text-white");
+      this.classList.remove("bg-gray-200");
+
+      const filter = this.getAttribute("data-filter");
+
+      projectCards.forEach((card) => {
+        // Show all cards if filter is "all"
+        if (filter === "all") {
+          card.style.display = "block";
+          setTimeout(() => {
+            card.classList.remove("opacity-0", "scale-95");
+            card.classList.add("opacity-100", "scale-100");
+          }, 50);
+          return;
+        }
+
+        // Otherwise, filter by category
+        const categories = card.getAttribute("data-category").split(" ");
+
+        if (categories.includes(filter)) {
+          card.style.display = "block";
+          setTimeout(() => {
+            card.classList.remove("opacity-0", "scale-95");
+            card.classList.add("opacity-100", "scale-100");
+          }, 50);
+        } else {
+          card.classList.remove("opacity-100", "scale-100");
+          card.classList.add("opacity-0", "scale-95");
+          setTimeout(() => {
+            card.style.display = "none";
+          }, 300);
+        }
+      });
+    });
+  });
+
+  // Back to top button functionality
+  const backToTopButton = document.getElementById("back-to-top");
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 500) {
+      backToTopButton.classList.remove("opacity-0", "invisible");
+      backToTopButton.classList.add("opacity-100", "visible");
+    } else {
+      backToTopButton.classList.remove("opacity-100", "visible");
+      backToTopButton.classList.add("opacity-0", "invisible");
+    }
+  });
+
+  backToTopButton.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+
+  // Enhanced form submission with better user feedback
   const contactForm = document.getElementById("contactForm");
+  const formResponse = document.getElementById("form-response");
 
   contactForm.addEventListener("submit", function (e) {
     e.preventDefault();
+
+    // Form validation
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const message = document.getElementById("message").value.trim();
+
+    if (!name || !email || !message) {
+      showFormResponse("error", "Please fill in all fields");
+      return;
+    }
+
+    // Email validation using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showFormResponse("error", "Please enter a valid email address");
+      return;
+    }
 
     // Add loading state
     const submitButton = this.querySelector('button[type="submit"]');
@@ -100,11 +187,6 @@ document.addEventListener("DOMContentLoaded", function () {
     submitButton.innerHTML =
       '<i class="fas fa-spinner fa-spin"></i> Sending...';
     submitButton.disabled = true;
-
-    // Get form data
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const message = document.getElementById("message").value;
 
     // Prepare template parameters for EmailJS
     const templateParams = {
@@ -114,44 +196,68 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // Send email using EmailJS
-    // Replace with your actual service ID and template ID
     emailjs.send("service_id", "template_id", templateParams).then(
       function (response) {
         console.log("SUCCESS!", response.status, response.text);
-
-        // Success animation
-        submitButton.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
-        submitButton.classList.remove("bg-primary");
-        submitButton.classList.add("bg-green-600");
+        showFormResponse(
+          "success",
+          "Your message has been sent. I'll get back to you soon!"
+        );
 
         // Reset form
         contactForm.reset();
 
-        // Reset button after delay
+        // Reset button
         setTimeout(() => {
           submitButton.innerHTML = originalText;
-          submitButton.classList.remove("bg-green-600");
-          submitButton.classList.add("bg-primary");
           submitButton.disabled = false;
-        }, 3000);
+        }, 2000);
       },
       function (error) {
         console.log("FAILED...", error);
+        showFormResponse(
+          "error",
+          "There was a problem sending your message. Please try again later."
+        );
 
-        // Error feedback
-        submitButton.innerHTML =
-          '<i class="fas fa-exclamation-circle"></i> Failed to Send';
-        submitButton.classList.remove("bg-primary");
-        submitButton.classList.add("bg-red-600");
-
-        // Reset button after delay
+        // Reset button
         setTimeout(() => {
           submitButton.innerHTML = originalText;
-          submitButton.classList.remove("bg-red-600");
-          submitButton.classList.add("bg-primary");
           submitButton.disabled = false;
-        }, 3000);
+        }, 2000);
       }
     );
   });
+
+  // Helper function to show form response messages
+  function showFormResponse(type, message) {
+    formResponse.classList.remove(
+      "hidden",
+      "bg-green-100",
+      "bg-red-100",
+      "text-green-800",
+      "text-red-800"
+    );
+
+    if (type === "success") {
+      formResponse.classList.add("bg-green-100", "text-green-800");
+      formResponse.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${message}`;
+    } else {
+      formResponse.classList.add("bg-red-100", "text-red-800");
+      formResponse.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
+    }
+
+    // Automatically hide the message after 5 seconds
+    setTimeout(() => {
+      formResponse.classList.add("hidden");
+    }, 5000);
+  }
+
+  // Add simple dark mode toggle (bonus feature)
+  const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+  // Add theme toggle functionality if you want to implement a dark mode toggle button later
+  if (prefersDarkScheme.matches) {
+    document.body.classList.add("dark-mode");
+  }
 });
