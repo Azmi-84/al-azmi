@@ -2,9 +2,9 @@
 const CONFIG = {
   // EmailJS configuration
   emailjs: {
-    publicKey: "YOUR_EMAILJS_PUBLIC_KEY", // Replace with your actual EmailJS public key
-    serviceId: "YOUR_EMAILJS_SERVICE_ID", // Replace with your EmailJS service ID
-    templateId: "YOUR_EMAILJS_TEMPLATE_ID", // Replace with your EmailJS template ID
+    publicKey: "Uy9y355BvksGDJGhe", // Replace with your actual EmailJS public key
+    serviceId: "service_saocigo", // Replace with your EmailJS service ID
+    templateId: "template_rr1kng1", // Replace with your EmailJS template ID
   },
 };
 
