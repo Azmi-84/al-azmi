@@ -1,13 +1,15 @@
 // Blog functionality with Firebase integration
 document.addEventListener("DOMContentLoaded", function () {
-  // Initialize AOS
+  // Initialize AOS with better settings
   AOS.init({
     duration: 800,
     easing: "ease-in-out",
     once: true,
+    disable: "mobile", // Disable on mobile for better performance
+    offset: 100,
   });
 
-  // Mobile menu functionality
+  // Mobile menu functionality - enhanced with animations
   const mobileMenuButton = document.getElementById("mobile-menu-button");
   const mobileMenu = document.getElementById("mobile-menu");
 
@@ -16,7 +18,53 @@ document.addEventListener("DOMContentLoaded", function () {
       const isExpanded =
         mobileMenuButton.getAttribute("aria-expanded") === "true";
       mobileMenuButton.setAttribute("aria-expanded", !isExpanded);
-      mobileMenu.classList.toggle("hidden");
+
+      if (isExpanded) {
+        // Close menu with animation
+        mobileMenu.classList.add("mobile-menu-exit");
+        setTimeout(() => {
+          mobileMenu.classList.add("mobile-menu-exit-active");
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+            mobileMenu.classList.remove(
+              "mobile-menu-enter",
+              "mobile-menu-enter-active",
+              "mobile-menu-exit",
+              "mobile-menu-exit-active"
+            );
+          }, 300);
+        }, 10);
+      } else {
+        // Open menu with animation
+        mobileMenu.classList.remove("hidden");
+        setTimeout(() => {
+          mobileMenu.classList.add("mobile-menu-enter");
+          setTimeout(() => {
+            mobileMenu.classList.add("mobile-menu-enter-active");
+          }, 10);
+        }, 10);
+      }
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener("click", function (e) {
+      if (
+        !mobileMenu.contains(e.target) &&
+        !mobileMenuButton.contains(e.target) &&
+        !mobileMenu.classList.contains("hidden")
+      ) {
+        mobileMenuButton.click();
+      }
+    });
+
+    // Close menu when window resizes to desktop size
+    window.addEventListener("resize", function () {
+      if (
+        window.innerWidth >= 768 &&
+        !mobileMenu.classList.contains("hidden")
+      ) {
+        mobileMenuButton.click();
+      }
     });
   }
 
@@ -30,6 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
     appId: "your-app-id",
   };
 
+  // Global state and variables
   let db = null; // Firestore database reference
   let currentUser = null; // For future authentication implementation
   let posts = []; // To store all posts
@@ -38,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const postsPerPage = 6; // Increased for better UX
   let isUsingLocalStorage = false;
   let selectedCategories = []; // To store selected categories for new/edit post
+  let lastFocusedElement = null; // For focus management
 
   // Elements
   const blogPostsContainer = document.getElementById("blogPosts");
@@ -53,9 +103,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const emptyState = document.getElementById("emptyState");
   const toast = document.getElementById("toast");
   const toastMessage = document.getElementById("toastMessage");
+  const dismissToast = document.getElementById("dismissToast");
   const confirmDialog = document.getElementById("confirmDialog");
   const cancelDialog = document.getElementById("cancelDialog");
-  const confirmDialogBtn = document.getElementById("confirmDialog");
+  const confirmDialogBtn = document.getElementById("confirmDialogBtn");
   const dialogMessage = document.getElementById("dialogMessage");
   const searchInput = document.getElementById("searchInput");
   const searchButton = document.getElementById("searchButton");
@@ -69,6 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextPage = document.getElementById("nextPage");
   const pageNumbers = document.getElementById("pageNumbers");
   const networkError = document.getElementById("networkError");
+  const dismissErrorBtn = document.getElementById("dismissErrorBtn");
   const postDetailModal = document.getElementById("postDetailModal");
   const modalTitle = document.getElementById("modalTitle");
   const modalContent = document.getElementById("modalContent");
@@ -79,6 +131,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectedCategoriesContainer =
     document.getElementById("selectedCategories");
   const categorySuggestions = document.querySelectorAll(".category-suggestion");
+  const titleError = document.getElementById("titleError");
+  const contentError = document.getElementById("contentError");
+  const submitButton = document.getElementById("submitButton");
 
   // Initialize marked.js options for markdown parsing
   marked.setOptions({
@@ -108,7 +163,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("Firebase initialization failed:", error);
     db = null;
     isUsingLocalStorage = true;
-
     // Show network error message if it exists in DOM
     if (networkError) {
       networkError.classList.remove("hidden");
@@ -125,19 +179,51 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (blogPostForm) {
-    blogPostForm.addEventListener("submit", savePost);
+    blogPostForm.addEventListener("submit", handleFormSubmit);
+  }
+
+  // Form field validation on blur
+  if (postTitleInput && titleError) {
+    postTitleInput.addEventListener("blur", validateTitle);
+    postTitleInput.addEventListener("input", () => {
+      if (postTitleInput.classList.contains("error")) {
+        validateTitle();
+      }
+    });
+  }
+
+  if (postContentInput && contentError) {
+    postContentInput.addEventListener("blur", validateContent);
+    postContentInput.addEventListener("input", () => {
+      if (postContentInput.classList.contains("error")) {
+        validateContent();
+      }
+    });
   }
 
   // Category input event listeners
   if (addCategoryBtn && categoryInput && selectedCategoriesContainer) {
     addCategoryBtn.addEventListener("click", addCategory);
-
     // Allow pressing Enter to add a category
     categoryInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
         addCategory();
       }
+    });
+  }
+
+  // Toast dismiss button
+  if (dismissToast && toast) {
+    dismissToast.addEventListener("click", () => {
+      hideToast();
+    });
+  }
+
+  // Network error dismiss button
+  if (dismissErrorBtn && networkError) {
+    dismissErrorBtn.addEventListener("click", () => {
+      networkError.classList.add("hidden");
     });
   }
 
@@ -170,12 +256,14 @@ document.addEventListener("DOMContentLoaded", function () {
       previewTab.classList.add("text-gray-700");
       writeContent.classList.remove("hidden");
       previewContent.classList.add("hidden");
-
       // Update ARIA states
       writeTab.setAttribute("aria-selected", "true");
       previewTab.setAttribute("aria-selected", "false");
       writeContent.setAttribute("aria-hidden", "false");
       previewContent.setAttribute("aria-hidden", "true");
+
+      // Focus on textarea when switching to write tab
+      postContentInput.focus();
     });
 
     previewTab.addEventListener("click", () => {
@@ -193,16 +281,14 @@ document.addEventListener("DOMContentLoaded", function () {
       writeTab.classList.add("text-gray-700");
       previewContent.classList.remove("hidden");
       writeContent.classList.add("hidden");
-
       // Update ARIA states
       writeTab.setAttribute("aria-selected", "false");
       previewTab.setAttribute("aria-selected", "true");
       writeContent.setAttribute("aria-hidden", "true");
       previewContent.setAttribute("aria-hidden", "false");
-
       // Update preview content
       previewContent.innerHTML = marked.parse(
-        postContentInput.value || "Nothing to preview"
+        postContentInput.value || "<em>Nothing to preview</em>"
       );
     });
   }
@@ -212,24 +298,33 @@ document.addEventListener("DOMContentLoaded", function () {
     postContentInput.addEventListener("input", () => {
       if (!previewContent.classList.contains("hidden")) {
         previewContent.innerHTML = marked.parse(
-          postContentInput.value || "Nothing to preview"
+          postContentInput.value || "<em>Nothing to preview</em>"
         );
       }
     });
   }
 
-  // Modal close buttons
-  if (closeDetailModal) {
-    closeDetailModal.addEventListener("click", () => {
-      postDetailModal.classList.add("hidden");
-      document.body.classList.remove("overflow-hidden");
-    });
+  // Modal close buttons with focus management
+  if (closeDetailModal && postDetailModal) {
+    closeDetailModal.addEventListener("click", closeDetailModalWithFocus);
   }
 
-  if (closeModalBtn) {
-    closeModalBtn.addEventListener("click", () => {
-      postDetailModal.classList.add("hidden");
-      document.body.classList.remove("overflow-hidden");
+  if (closeModalBtn && postDetailModal) {
+    closeModalBtn.addEventListener("click", closeDetailModalWithFocus);
+  }
+
+  // Close modal on outside click and ESC key
+  if (postDetailModal) {
+    postDetailModal.addEventListener("click", (e) => {
+      if (e.target === postDetailModal) {
+        closeDetailModalWithFocus();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !postDetailModal.classList.contains("hidden")) {
+        closeDetailModalWithFocus();
+      }
     });
   }
 
@@ -258,27 +353,41 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Search functionality
+  // Search functionality with debounce
   if (searchButton && searchInput) {
     searchButton.addEventListener("click", () => {
       filterAndDisplayPosts();
     });
 
+    // Debounced search on typing
+    let searchTimeout;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        filterAndDisplayPosts();
+      }, 500);
+    });
+
     searchInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
+        e.preventDefault();
         filterAndDisplayPosts();
       }
     });
   }
 
-  // Pagination
+  // Pagination with better UX
   if (prevPage) {
     prevPage.addEventListener("click", () => {
       if (currentPage > 1) {
         currentPage--;
         filterAndDisplayPosts();
-        // Scroll to top of posts
-        blogPostsContainer.scrollIntoView({ behavior: "smooth" });
+
+        // Scroll to top of posts with smooth animation
+        blogPostsContainer.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }
     });
   }
@@ -289,21 +398,93 @@ document.addEventListener("DOMContentLoaded", function () {
       if (currentPage < totalPages) {
         currentPage++;
         filterAndDisplayPosts();
-        // Scroll to top of posts
-        blogPostsContainer.scrollIntoView({ behavior: "smooth" });
+
+        // Scroll to top of posts with smooth animation
+        blogPostsContainer.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }
     });
   }
 
-  // Dialog event listeners
+  // Dialog event listeners with proper focus management
   if (confirmDialog && cancelDialog) {
     cancelDialog.addEventListener("click", hideConfirmDialog);
+
+    // Close on Escape key
+    confirmDialog.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        hideConfirmDialog();
+      }
+    });
+
+    // Close on outside click
+    confirmDialog.addEventListener("click", (e) => {
+      if (e.target === confirmDialog) {
+        hideConfirmDialog();
+      }
+    });
   }
 
   // Load posts on page load
   loadPosts();
 
-  // Functions
+  // Form validation functions
+  function validateTitle() {
+    if (!postTitleInput || !titleError) return true;
+
+    const value = postTitleInput.value.trim();
+    if (!value) {
+      postTitleInput.classList.add("error");
+      titleError.textContent = "Title is required";
+      titleError.classList.remove("hidden");
+      return false;
+    }
+
+    postTitleInput.classList.remove("error");
+    titleError.classList.add("hidden");
+    return true;
+  }
+
+  function validateContent() {
+    if (!postContentInput || !contentError) return true;
+
+    const value = postContentInput.value.trim();
+    if (!value) {
+      postContentInput.classList.add("error");
+      contentError.textContent = "Content is required";
+      contentError.classList.remove("hidden");
+      return false;
+    }
+
+    postContentInput.classList.remove("error");
+    contentError.classList.add("hidden");
+    return true;
+  }
+
+  function validateForm() {
+    const titleValid = validateTitle();
+    const contentValid = validateContent();
+    return titleValid && contentValid;
+  }
+
+  function handleFormSubmit(e) {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      // Scroll to first error
+      const firstError = document.querySelector(".form-input.error");
+      if (firstError) {
+        firstError.focus();
+      }
+      return;
+    }
+
+    savePost(e);
+  }
+
+  // Main functions
   async function loadPosts() {
     if (!blogPostsContainer) return;
 
@@ -316,6 +497,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .collection("posts")
           .orderBy("date", "desc")
           .get();
+
         posts = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -323,6 +505,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         // Load from localStorage
         posts = getPosts();
+
         if (!isUsingLocalStorage) {
           isUsingLocalStorage = true;
           if (networkError) networkError.classList.remove("hidden");
@@ -376,7 +559,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const allButton = categoryFiltersContainer.querySelector(
       '[data-category="all"]'
     );
+
     categoryFiltersContainer.innerHTML = "";
+
     if (allButton) {
       categoryFiltersContainer.appendChild(allButton);
     }
@@ -387,7 +572,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const button = document.createElement("button");
       button.className =
-        "category-filter px-4 py-2 rounded-md bg-gray-200 text-gray-700 transition-all hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary";
+        "category-filter px-4 py-2 rounded-md bg-gray-200 text-gray-700 transition-all hover:bg-secondary hover:text-white focus-ring";
       button.setAttribute("data-category", category);
       button.setAttribute("aria-pressed", "false");
       button.textContent = category;
@@ -412,6 +597,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const paginatedPosts = filteredPosts.slice(start, end);
 
     displayPosts(paginatedPosts);
+
+    // Announce to screen readers
+    announceToScreenReader(
+      `Showing ${paginatedPosts.length} posts of ${filteredPosts.length} total.`
+    );
   }
 
   function getFilteredPosts() {
@@ -459,17 +649,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const createPageButton = (pageNum, isActive = false) => {
       const pageBtn = document.createElement("button");
       pageBtn.className = isActive
-        ? "px-3 py-1 rounded-md bg-primary text-white"
-        : "px-3 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100";
+        ? "px-3 py-1 rounded-md bg-primary text-white focus-ring"
+        : "px-3 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 focus-ring";
       pageBtn.textContent = pageNum;
       pageBtn.setAttribute("aria-label", `Page ${pageNum}`);
+
       if (isActive) {
         pageBtn.setAttribute("aria-current", "page");
       }
+
       pageBtn.addEventListener("click", () => {
         currentPage = pageNum;
         filterAndDisplayPosts();
       });
+
       return pageBtn;
     };
 
@@ -542,6 +735,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const emptyStateDiv = document.createElement("div");
       emptyStateDiv.className = "text-center py-16 text-gray-500 italic";
       emptyStateDiv.innerHTML = message;
+
       blogPostsContainer.appendChild(emptyStateDiv);
       return;
     }
@@ -552,9 +746,14 @@ document.addEventListener("DOMContentLoaded", function () {
       "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
     blogPostsContainer.appendChild(postsGrid);
 
-    // Add each post to the container
-    postsToDisplay.forEach((post) => {
+    // Add each post to the container with staggered animations
+    postsToDisplay.forEach((post, index) => {
       const postEl = createPostElement(post);
+
+      // Add staggered animation
+      postEl.style.animationDelay = `${index * 50}ms`;
+      postEl.classList.add("animate-fadeIn");
+
       postsGrid.appendChild(postEl);
     });
   }
@@ -609,14 +808,14 @@ document.addEventListener("DOMContentLoaded", function () {
         )}</h2>
         <div class="flex space-x-1 ml-2">
           <button class="edit-btn bg-transparent border-none p-2 rounded-full hover:bg-blue-50 transition-colors 
-            cursor-pointer text-gray-500 hover:text-primary focus:outline-none focus:ring-2 focus:ring-secondary" title="Edit Post">
+            cursor-pointer text-gray-500 hover:text-primary focus-ring" title="Edit Post">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
             </svg>
             <span class="sr-only">Edit post</span>
           </button>
           <button class="delete-btn bg-transparent border-none p-2 rounded-full hover:bg-red-50 transition-colors 
-            cursor-pointer text-gray-500 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-secondary" title="Delete Post">
+            cursor-pointer text-gray-500 hover:text-red-600 focus-ring" title="Delete Post">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M9 2a1 1 00-.894.553L7.382 4H4a1 1 00-1 1v10a2 2 002 2h8a2 2 002-2V6a1 1 100-2h-3.382l-.724-1.447A1 1 0011 2H9zM7 8a1 1 012 0v6a1 1 11-2 0V8zm5-1a1 1 00-1 1v6a1 1 102 0V8a1 1 00-1-1z" clip-rule="evenodd" />
             </svg>
@@ -642,7 +841,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <span class="text-xs text-gray-500">By ${
           post.author || "Anonymous"
         }</span>
-        <button class="read-more-btn text-secondary hover:text-blue-700 transition-all inline-flex items-center gap-1 font-medium text-sm">
+        <button class="read-more-btn text-secondary hover:text-blue-700 transition-all inline-flex items-center gap-1 font-medium text-sm focus-ring rounded">
           <span>Read more</span>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd" d="M10.293 5.293a1 1 011.414 0l4 4a1 1 010 1.414l-4 4a1 1 01-1.414-1.414L12.586 11H5a1 1 110-2h7.586l-2.293-2.293a1 1 010-1.414z" clip-rule="evenodd" />
@@ -660,7 +859,10 @@ document.addEventListener("DOMContentLoaded", function () {
     deleteBtn.addEventListener("click", () => showDeleteConfirmation(post.id));
 
     if (readMoreBtn) {
-      readMoreBtn.addEventListener("click", () => showPostDetail(post));
+      readMoreBtn.addEventListener("click", () => {
+        lastFocusedElement = readMoreBtn;
+        showPostDetail(post);
+      });
     }
 
     return postEl;
@@ -716,6 +918,34 @@ document.addEventListener("DOMContentLoaded", function () {
     // Show modal and prevent body scrolling
     postDetailModal.classList.remove("hidden");
     document.body.classList.add("overflow-hidden");
+
+    // Add modal animation
+    postDetailModal.classList.add("modal-enter");
+    setTimeout(() => {
+      postDetailModal.classList.add("modal-enter-active");
+    }, 10);
+
+    // Focus on close button
+    setTimeout(() => {
+      closeDetailModal.focus();
+    }, 100);
+
+    // Trap focus in modal
+    trapFocusInModal(postDetailModal);
+  }
+
+  function closeDetailModalWithFocus() {
+    if (!postDetailModal) return;
+
+    document.body.classList.remove("overflow-hidden");
+    postDetailModal.classList.remove("modal-enter", "modal-enter-active");
+    postDetailModal.classList.add("hidden");
+
+    // Restore focus
+    if (lastFocusedElement) {
+      lastFocusedElement.focus();
+      lastFocusedElement = null;
+    }
   }
 
   function addCategory() {
@@ -742,8 +972,10 @@ document.addEventListener("DOMContentLoaded", function () {
     tagEl.className =
       "inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm";
     tagEl.innerHTML = `
-      <span class="mr-1">${category}</span>
-      <button type="button" class="remove-category text-blue-700 hover:text-blue-900 focus:outline-none" aria-label="Remove ${category}">
+      <span class="mr-1">${escapeHtml(category)}</span>
+      <button type="button" class="remove-category text-blue-700 hover:text-blue-900 focus-ring" aria-label="Remove ${escapeHtml(
+        category
+      )}">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 011.414 0L10 8.586l4.293-4.293a1 1 111.414 1.414L11.414 10l4.293 4.293a1 1 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 01-1.414-1.414L8.586 10 4.293 5.707a1 1 010-1.414z" clip-rule="evenodd" />
         </svg>
@@ -778,14 +1010,37 @@ document.addEventListener("DOMContentLoaded", function () {
       writeTab.click();
     }
 
+    // Clear any validation errors
+    if (titleError) titleError.classList.add("hidden");
+    if (contentError) contentError.classList.add("hidden");
+    if (postTitleInput) postTitleInput.classList.remove("error");
+    if (postContentInput) postContentInput.classList.remove("error");
+
+    // Store last focused element for focus restoration
+    lastFocusedElement = document.activeElement;
+
     postForm.classList.remove("hidden");
     newPostBtn.classList.add("hidden");
-    postTitleInput.focus();
+
+    // Show the form with animation
+    postForm.classList.add("animate-fadeIn");
+
+    // Focus on the title input
+    setTimeout(() => {
+      postTitleInput.focus();
+    }, 100);
   }
 
   function hidePostForm() {
     postForm.classList.add("hidden");
     newPostBtn.classList.remove("hidden");
+
+    // Restore focus
+    if (lastFocusedElement) {
+      lastFocusedElement.focus();
+    } else {
+      newPostBtn.focus();
+    }
   }
 
   async function savePost(e) {
@@ -794,9 +1049,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const title = postTitleInput.value.trim();
     const content = postContentInput.value.trim();
 
-    if (!title || !content) {
-      showToast("Please fill in all required fields", "error");
-      return;
+    // Submit button loading state
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.innerHTML =
+        '<svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...';
     }
 
     const postId = postIdInput.value || generateId();
@@ -861,13 +1118,22 @@ document.addEventListener("DOMContentLoaded", function () {
       showToast("Failed to save post. Please try again.", "error");
     } finally {
       showLoading(false);
+
+      // Reset submit button
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 01-1.414 0l-4-4a1 1 01-1.414-1.414L11.414 10l4.293 4.293a1 1 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 01-1.414-1.414L8.586 10 4.293 5.707a1 1 010-1.414z" clip-rule="evenodd" /></svg> Save Post';
+      }
     }
   }
 
   function editPost(id) {
     const post = getPostById(id);
-
     if (!post) return;
+
+    // Store last focused element for focus restoration
+    lastFocusedElement = document.activeElement;
 
     formTitle.textContent = "Edit Post";
     postIdInput.value = post.id;
@@ -883,6 +1149,12 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
+    // Clear any validation errors
+    if (titleError) titleError.classList.add("hidden");
+    if (contentError) contentError.classList.add("hidden");
+    if (postTitleInput) postTitleInput.classList.remove("error");
+    if (postContentInput) postContentInput.classList.remove("error");
+
     // Reset to write tab
     if (writeTab) {
       writeTab.click();
@@ -890,12 +1162,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     postForm.classList.remove("hidden");
     newPostBtn.classList.add("hidden");
-    postTitleInput.focus();
+
+    // Show the form with animation
+    postForm.classList.add("animate-fadeIn");
+
+    // Focus on the title input
+    setTimeout(() => {
+      postTitleInput.focus();
+    }, 100);
   }
 
   function showDeleteConfirmation(id) {
     const post = getPostById(id);
     if (!post) return;
+
+    // Store last focused element for focus restoration
+    lastFocusedElement = document.activeElement;
 
     if (!confirmDialog) {
       // Fallback if dialog doesn't exist
@@ -905,40 +1187,72 @@ document.addEventListener("DOMContentLoaded", function () {
         )
       ) {
         deletePost(id);
+      } else {
+        // Restore focus if cancel clicked
+        if (lastFocusedElement) {
+          lastFocusedElement.focus();
+          lastFocusedElement = null;
+        }
       }
       return;
     }
 
-    // Set up the dialog
-    const dialogTitle = confirmDialog.querySelector("#dialogTitle");
-    if (dialogTitle) {
-      dialogTitle.textContent = "Delete Post";
+    // Fix the confirmation dialog structure to match the HTML
+    const dialogDiv = confirmDialog.querySelector(".bg-white");
+
+    if (dialogDiv) {
+      dialogDiv.innerHTML = `
+        <h3 class="text-xl font-semibold text-gray-900 mb-4" id="dialogTitle">Delete Post</h3>
+        <p id="dialogMessage" class="text-gray-700 mb-6">Are you sure you want to delete "${escapeHtml(
+          post.title
+        )}"? This action cannot be undone.</p>
+        <div class="flex flex-col-reverse sm:flex-row justify-end space-y-3 space-y-reverse sm:space-y-0 sm:space-x-4">
+          <button id="cancelDialog"
+              class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300 focus-ring">
+              Cancel
+          </button>
+          <button id="confirmDialogBtn"
+              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-300 focus-ring">
+              Delete
+          </button>
+        </div>
+      `;
+
+      // Set up button event listeners
+      const newCancelBtn = dialogDiv.querySelector("#cancelDialog");
+      const newConfirmBtn = dialogDiv.querySelector("#confirmDialogBtn");
+
+      if (newCancelBtn) {
+        newCancelBtn.addEventListener("click", hideConfirmDialog);
+      }
+
+      if (newConfirmBtn) {
+        newConfirmBtn.addEventListener("click", () => {
+          deletePost(id);
+          hideConfirmDialog();
+        });
+      }
     }
 
-    if (dialogMessage) {
-      dialogMessage.textContent = `Are you sure you want to delete "${post.title}"? This action cannot be undone.`;
-    }
-
-    // Set up the confirm button
-    if (confirmDialogBtn) {
-      // Remove existing event listeners
-      const newConfirmBtn = confirmDialogBtn.cloneNode(true);
-      confirmDialogBtn.parentNode.replaceChild(newConfirmBtn, confirmDialogBtn);
-
-      // Add new event listener
-      newConfirmBtn.addEventListener("click", () => {
-        deletePost(id);
-        hideConfirmDialog();
-      });
-    }
-
-    // Show the dialog
+    // Show the dialog with animation
     confirmDialog.classList.remove("hidden");
+
+    // Focus on confirm button
+    setTimeout(() => {
+      const confirmBtn = confirmDialog.querySelector("#confirmDialogBtn");
+      if (confirmBtn) confirmBtn.focus();
+    }, 100);
   }
 
   function hideConfirmDialog() {
     if (confirmDialog) {
       confirmDialog.classList.add("hidden");
+
+      // Restore focus
+      if (lastFocusedElement) {
+        lastFocusedElement.focus();
+        lastFocusedElement = null;
+      }
     }
   }
 
@@ -956,11 +1270,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Update local posts array
       posts = posts.filter((post) => post.id !== id);
-
       showToast("Post deleted successfully");
 
       // Refresh posts display
       filterAndDisplayPosts();
+
+      // Update category filters as categories might have changed
+      updateCategoryFilters();
     } catch (error) {
       console.error("Error deleting post:", error);
       showToast("Failed to delete post. Please try again.", "error");
@@ -997,25 +1313,28 @@ document.addEventListener("DOMContentLoaded", function () {
     // Show toast
     toast.classList.remove("opacity-0", "translate-y-2", "pointer-events-none");
 
-    // Hide after 3 seconds
-    setTimeout(() => {
+    // Hide after 5 seconds
+    clearTimeout(window.toastTimeout);
+    window.toastTimeout = setTimeout(() => {
+      hideToast();
+    }, 5000);
+  }
+
+  function hideToast() {
+    if (toast) {
       toast.classList.add("opacity-0", "translate-y-2", "pointer-events-none");
-    }, 3000);
+    }
   }
 
   function showLoading(isLoading) {
-    if (!loadingState) return;
+    if (!loadingState || !blogPostsContainer) return;
 
     if (isLoading) {
       loadingState.classList.remove("hidden");
-      if (blogPostsContainer) {
-        blogPostsContainer.classList.add("hidden");
-      }
+      blogPostsContainer.classList.add("hidden");
     } else {
       loadingState.classList.add("hidden");
-      if (blogPostsContainer) {
-        blogPostsContainer.classList.remove("hidden");
-      }
+      blogPostsContainer.classList.remove("hidden");
     }
   }
 
@@ -1065,11 +1384,56 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function escapeHtml(unsafe) {
+    if (!unsafe) return "";
+
     return unsafe
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function trapFocusInModal(modal) {
+    // Get all focusable elements
+    const focusableElements = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    // Handle tab key press
+    modal.addEventListener("keydown", function (e) {
+      if (e.key === "Tab") {
+        // If shift key is pressed and focus is on first element, move to last element
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+        // If focus is on last element, move to first element
+        else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+      }
+    });
+  }
+
+  function announceToScreenReader(message) {
+    // Create or get an invisible live region for screen reader announcements
+    let ariaLive = document.getElementById("aria-live-region");
+
+    if (!ariaLive) {
+      ariaLive = document.createElement("div");
+      ariaLive.id = "aria-live-region";
+      ariaLive.setAttribute("aria-live", "polite");
+      ariaLive.classList.add("sr-only");
+      document.body.appendChild(ariaLive);
+    }
+
+    ariaLive.textContent = message;
   }
 });

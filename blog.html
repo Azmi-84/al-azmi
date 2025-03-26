@@ -440,7 +440,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                 fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                                     clip-rule="evenodd" />
                             </svg>
                             Save Post
@@ -532,21 +532,22 @@
     <!-- Confirmation Dialog - Improved focus management -->
     <div id="confirmDialog" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
         role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
-        <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl animate-fadeIn"></div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-4" id="dialogTitle">Confirmation</h3>
-        <p id="dialogMessage" class="text-gray-700 mb-6">Are you sure you want to delete this post? This action
-            cannot be undone.</p>
-        <div class="flex flex-col-reverse sm:flex-row justify-end space-y-3 space-y-reverse sm:space-y-0 sm:space-x-4">
-            <button id="cancelDialog"
-                class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300 focus-ring">
-                Cancel
-            </button>
-            <button id="confirmDialogBtn"
-                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-300 focus-ring">
-                Delete
-            </button>
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl animate-fadeIn">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4" id="dialogTitle">Confirmation</h3>
+            <p id="dialogMessage" class="text-gray-700 mb-6">Are you sure you want to delete this post? This action
+                cannot be undone.</p>
+            <div
+                class="flex flex-col-reverse sm:flex-row justify-end space-y-3 space-y-reverse sm:space-y-0 sm:space-x-4">
+                <button id="cancelDialog"
+                    class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300 focus-ring">
+                    Cancel
+                </button>
+                <button id="confirmDialogBtn"
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-300 focus-ring">
+                    Delete
+                </button>
+            </div>
         </div>
-    </div>
     </div>
 
     <!-- Post Detail Modal - Improved accessibility and UX -->
