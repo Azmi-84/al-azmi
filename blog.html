@@ -218,6 +218,15 @@
                 <div class="flex justify-between items-center">
                     <a href="index.html" class="text-2xl font-bold text-primary">Abdullah<span
                             class="text-secondary">.dev</span></a>
+
+                    <!-- Connection status indicator -->
+                    <div id="connection-status" class="hidden md:flex items-center mr-4 cursor-help"
+                        title="Database connection status">
+                        <span id="connection-dot" class="h-2.5 w-2.5 rounded-full bg-gray-400 mr-2"></span>
+                        <span id="connection-text" class="text-xs font-medium text-gray-600">Checking
+                            connection...</span>
+                    </div>
+
                     <!-- Mobile menu button -->
                     <div class="md:hidden">
                         <button id="mobile-menu-button" class="text-gray-600 hover:text-primary focus-ring p-2 rounded"
@@ -261,8 +270,21 @@
         </nav>
     </header>
 
+    <!-- Offline mode banner -->
+    <div id="offline-banner"
+        class="hidden w-full bg-amber-100 text-amber-800 py-2 px-4 text-center text-sm font-medium">
+        <div class="container mx-auto flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Working offline - Your posts are saved locally and will sync when connection is restored</span>
+        </div>
+    </div>
+
     <!-- Hero Section with gradient background to match main page style -->
-    <section class="pt-28 pb-10 bg-gradient-to-br from-primary to-dark text-white relative">
+    <section class="pt-28 pb-20 bg-gradient-to-br from-primary to-dark text-white relative">
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col items-center text-center">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4" data-aos="fade-up" data-aos-duration="800">My Research
@@ -272,9 +294,9 @@
                 </p>
             </div>
         </div>
-        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-0 transform">
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-0 transform translate-y-1">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"
-                class="h-12 w-full" fill="#f9fafb">
+                class="h-10 w-full block" fill="#f9fafb">
                 <path
                     d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z">
                 </path>
@@ -282,8 +304,8 @@
         </div>
     </section>
 
-    <main id="main-content" class="pb-16 flex-grow">
-        <div class="container mx-auto px-4 md:px-8 -mt-6">
+    <main id="main-content" class="pb-16 flex-grow bg-gray-50">
+        <div class="container mx-auto px-4 md:px-8 pt-10">
             <!-- Blog Header with Search -->
             <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
                 data-aos="fade-up">
@@ -457,7 +479,7 @@
                 </div>
             </div>
 
-            <!-- Network Error Message - Enhanced visibility -->
+            <!-- Enhanced network error notification with retry button -->
             <div id="networkError"
                 class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-md mb-6 flex items-start shadow-md animate-fadeIn">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20"
@@ -466,11 +488,20 @@
                         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                         clip-rule="evenodd" />
                 </svg>
-                <div>
+                <div class="flex-1">
                     <p class="font-medium">Connection Error</p>
-                    <p class="text-sm mt-1">Unable to connect to the database. Your posts will be stored locally until
-                        connection is restored.</p>
-                    <button class="text-sm mt-2 text-red-800 underline focus-ring" id="dismissErrorBtn">Dismiss</button>
+                    <p class="text-sm mt-1" id="network-error-message">Unable to connect to the database. Your posts are
+                        saved locally and will sync automatically when connection is restored.</p>
+                    <div class="mt-2 flex flex-wrap gap-3">
+                        <button class="text-sm text-red-800 underline focus-ring" id="dismissErrorBtn">Dismiss</button>
+                        <button
+                            class="text-sm bg-red-700 hover:bg-red-800 text-white px-2 py-1 rounded transition-colors focus-ring"
+                            id="retryConnectionBtn">
+                            Retry Connection
+                        </button>
+                    </div>
+                    <!-- Auto-dismiss progress indicator -->
+                    <div class="h-1 bg-red-200 absolute bottom-0 left-0" id="error-auto-dismiss"></div>
                 </div>
             </div>
 
@@ -555,27 +586,27 @@
         role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div
             class="bg-white rounded-lg max-w-3xl w-full mx-4 shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-fadeIn">
-            <div class="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
-                <h3 class="text-2xl font-bold text-primary" id="modalTitle">Post Title</h3>
-                <button id="closeDetailModal" class="text-gray-500 hover:text-gray-800 focus-ring rounded-full p-1"
-                    aria-label="Close">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="overflow-auto p-6" id="modalContent">
-                <!-- Modal content will be displayed here -->
-            </div>
-            <div class="border-t p-4 flex justify-end sticky bottom-0 bg-white">
-                <button id="closeModalBtn"
-                    class="bg-primary hover:bg-blue-800 text-white px-6 py-2 rounded-md transition duration-300 focus-ring">
-                    Close
-                </button>
-            </div>
         </div>
+        <div class="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
+            <h3 class="text-2xl font-bold text-primary" id="modalTitle">Post Title</h3>
+            <button id="closeDetailModal" class="text-gray-500 hover:text-gray-800 focus-ring rounded-full p-1"
+                aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="overflow-auto p-6" id="modalContent">
+            <!-- Modal content will be displayed here -->
+        </div>
+        <div class="border-t p-4 flex justify-end sticky bottom-0 bg-white">
+            <button id="closeModalBtn"
+                class="bg-primary hover:bg-blue-800 text-white px-6 py-2 rounded-md transition duration-300 focus-ring">
+                Close
+            </button>
+        </div>
+    </div>
     </div>
 
     <!-- Back to top button -->
@@ -589,15 +620,15 @@
     <footer class="bg-dark text-white py-8 mt-auto">
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <h2 class="text-2xl font-bold">Abdullah al Azmi</h2>
-                    <p class="text-gray-400">Mechanical Engineer & AI Enthusiast</p>
-                </div>
-                <div class="text-center md:text-right">
-                    <p class="text-gray-400">&copy; <span id="current-year">2023</span> Abdullah al Azmi. All rights
-                        reserved.</p>
-                </div>
+                <div class="mb-4 md:mb-0"></div>
+                <h2 class="text-2xl font-bold">Abdullah al Azmi</h2>
+                <p class="text-gray-400">Mechanical Engineer & AI Enthusiast</p>
             </div>
+            <div class="text-center md:text-right">
+                <p class="text-gray-400">&copy; <span id="current-year">2023</span> Abdullah al Azmi. All rights
+                    reserved.</p>
+            </div>
+        </div>
         </div>
     </footer>
 
