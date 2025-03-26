@@ -239,14 +239,10 @@ const EmailSubmission = {
 
   initEmailJS() {
     try {
-      // Check if service is configured with valid values
-      if (
-        CONFIG.emailjs.publicKey === "Uy9y355BvksGDJGhe" ||
-        !CONFIG.emailjs.publicKey ||
-        CONFIG.emailjs.publicKey.length < 10
-      ) {
+      // Only check if a public key exists
+      if (!CONFIG.emailjs.publicKey) {
         console.error(
-          "EmailJS not configured: Please update the public key in the CONFIG object"
+          "EmailJS not configured: Please add a public key in the CONFIG object"
         );
         return false;
       }
