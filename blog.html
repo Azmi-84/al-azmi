@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdullah al Azmi | Blog</title>
+    <!-- Add Noto Sans CJK KR Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="blog.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1E3A8A",
+                        secondary: "#0EA5E9",
+                        dark: "#0F172A",
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <!-- Accessibility skip navigation -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-white focus:z-50">Skip to
+        main content</a>
+
+    <!-- Navigation -->
+    <header>
+        <nav class="bg-white shadow-md fixed w-full z-50" aria-label="Main navigation">
+            <div class="container mx-auto px-4 md:px-8 py-3">
+                <div class="flex justify-between items-center">
+                    <a href="index.html" class="text-2xl font-bold text-primary">Abdullah<span
+                            class="text-secondary">.dev</span></a>
+                    <!-- Mobile menu button -->
+                    <div class="md:hidden">
+                        <button id="mobile-menu-button"
+                            class="text-gray-600 hover:text-primary focus:outline-none focus:ring-2 focus:ring-secondary p-2 rounded"
+                            aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle navigation menu">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                    <!-- Desktop Navigation -->
+                    <div class="hidden md:flex space-x-8">
+                        <a href="index.html" class="nav-link">Home</a>
+                        <a href="index.html#about" class="nav-link">About</a>
+                        <a href="index.html#skills" class="nav-link">Skills</a>
+                        <a href="index.html#projects" class="nav-link">Projects</a>
+                        <a href="index.html#education" class="nav-link">Education</a>
+                        <a href="blog.html" class="nav-link text-secondary">Blog</a>
+                        <a href="index.html#contact" class="nav-link">Contact</a>
+                    </div>
+                </div>
+                <!-- Mobile Navigation -->
+                <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 border-t border-gray-100 pt-2">
+                    <a href="index.html" class="block py-2 nav-link">Home</a>
+                    <a href="index.html#about" class="block py-2 nav-link">About</a>
+                    <a href="index.html#skills" class="block py-2 nav-link">Skills</a>
+                    <a href="index.html#projects" class="block py-2 nav-link">Projects</a>
+                    <a href="index.html#education" class="block py-2 nav-link">Education</a>
+                    <a href="blog.html" class="block py-2 nav-link text-secondary">Blog</a>
+                    <a href="index.html#contact" class="block py-2 nav-link">Contact</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content" class="pt-24 pb-16">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex items-center justify-between mb-8" data-aos="fade-right">
+                <h1 class="text-3xl md:text-4xl font-bold text-primary">My Blog</h1>
+                <button id="newPostBtn"
+                    class="bg-secondary hover:bg-blue-600 text-white py-2 px-6 rounded-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-secondary">
+                    <i class="fas fa-plus mr-2"></i> New Post
+                </button>
+            </div>
+
+            <div id="postForm" class="hidden bg-white p-6 rounded-lg shadow-md mb-8" data-aos="fade-up">
+                <h2 id="formTitle" class="text-2xl font-bold mb-4 text-primary">Create New Post</h2>
+                <form id="blogPostForm">
+                    <input type="hidden" id="postId">
+                    <div class="mb-4">
+                        <label for="postTitle" class="block mb-2 font-medium">Title</label>
+                        <input type="text" id="postTitle"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary"
+                            required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="postContent" class="block mb-2 font-medium">Content (Markdown supported)</label>
+                        <div class="mb-2 text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Supports basic Markdown: **bold**, *italic*, # headings, ```code blocks```, etc.
+                        </div>
+                        <textarea id="postContent" rows="10"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary font-mono"
+                            required></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelBtn"
+                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="bg-primary hover:bg-blue-800 text-white px-6 py-2 rounded-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary">
+                            Save Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="blogPosts" class="space-y-8" data-aos="fade-up" data-aos-delay="100">
+                <!-- Blog posts will be loaded here dynamically -->
+                <div class="text-center py-16 text-gray-500 italic">
+                    No posts yet. Be the first to create a post!
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-2xl font-bold">Abdullah al Azmi</h2>
+                    <p class="text-gray-400">Mechanical Engineer & AI Enthusiast</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">&copy; 2025 Abdullah al Azmi. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="blog.js"></script>
+</body>
+
+</html>
