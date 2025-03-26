@@ -2,7 +2,7 @@
 const CONFIG = {
   emailjs: {
     // Update this key with your valid EmailJS public key from https://dashboard.emailjs.com/admin/account
-    publicKey: "YOUR_PUBLIC_KEY", // Previous value was invalid: "Uy9y355BvksGDJGhe"
+    publicKey: "Uy9y355BvksGDJGhe",
     serviceId: "service_saocigo",
     templateId: "template_rr1kng1",
   },
