@@ -46,7 +46,10 @@ const MobileMenu = {
     );
     const mobileMenu = document.querySelector(CONFIG.selectors.mobileMenu);
 
-    if (!menuButton || !mobileMenu) return;
+    if (!menuButton || !mobileMenu) {
+      console.warn("Mobile menu elements not found");
+      return;
+    }
 
     menuButton.addEventListener("click", () => {
       const isExpanded = menuButton.getAttribute("aria-expanded") === "true";
@@ -68,7 +71,7 @@ const MobileMenu = {
   },
 
   closeMenu(menu) {
-    menu.classList.add("mobile-menu-enter");
+    // Don't add mobile-menu-enter if it might already be there
     menu.classList.remove("mobile-menu-enter-active");
 
     setTimeout(() => {
@@ -226,16 +229,21 @@ const EmailSubmission = {
 
   initEmailJS() {
     try {
-      if (typeof emailjs !== "undefined") {
-        emailjs.init({
-          publicKey: CONFIG.emailjs.publicKey,
-        });
-        console.log("EmailJS initialized successfully");
-      } else {
-        console.error("EmailJS library not loaded");
+      if (typeof emailjs === "undefined") {
+        console.error(
+          "EmailJS library not loaded. Make sure to include the EmailJS script."
+        );
+        return false;
       }
+
+      emailjs.init({
+        publicKey: CONFIG.emailjs.publicKey,
+      });
+      console.log("EmailJS initialized successfully");
+      return true;
     } catch (error) {
       console.error("EmailJS initialization error:", error);
+      return false;
     }
   },
 
@@ -273,19 +281,21 @@ const EmailSubmission = {
   },
 
   showLoadingState(responseElement) {
-    responseElement.className = "my-4 p-4 rounded-md bg-blue-100";
-    responseElement.classList.remove("hidden");
+    responseElement.classList.remove("hidden", "bg-green-100", "bg-red-100");
+    responseElement.classList.add("my-4", "p-4", "rounded-md", "bg-blue-100");
     responseElement.textContent = "Sending your message...";
     responseElement.setAttribute("aria-hidden", "false");
   },
 
   showSuccessMessage(responseElement) {
-    responseElement.className = "my-4 p-4 rounded-md bg-green-100";
+    responseElement.classList.remove("bg-blue-100", "bg-red-100");
+    responseElement.classList.add("my-4", "p-4", "rounded-md", "bg-green-100");
     responseElement.textContent = "Your message has been sent successfully!";
   },
 
   showErrorMessage(responseElement, message) {
-    responseElement.className = "my-4 p-4 rounded-md bg-red-100";
+    responseElement.classList.remove("bg-blue-100", "bg-green-100");
+    responseElement.classList.add("my-4", "p-4", "rounded-md", "bg-red-100");
     responseElement.classList.remove("hidden");
     responseElement.textContent = message;
     responseElement.setAttribute("aria-hidden", "false");
@@ -473,9 +483,12 @@ const ProjectModal = {
     modal.classList.remove("hidden");
     document.body.style.overflow = "hidden";
 
-    // Focus on the close button for accessibility
+    // Focus on the close button for accessibility with error handling
     setTimeout(() => {
-      modal.querySelector("#close-modal").focus();
+      const closeButton = modal.querySelector("#close-modal");
+      if (closeButton) {
+        closeButton.focus();
+      }
     }, 100);
   },
 
