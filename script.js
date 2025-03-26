@@ -1,9 +1,8 @@
 // Configuration and Constants
 const CONFIG = {
   emailjs: {
-    // Update this key with your valid EmailJS public key from https://dashboard.emailjs.com/admin/account
     publicKey: "Uy9y355BvksGDJGhe",
-    serviceId: "service_saocigo",
+    serviceId: "service_hp0axth",
     templateId: "template_rr1kng1",
   },
   selectors: {
@@ -242,7 +241,7 @@ const EmailSubmission = {
     try {
       // Check if service is configured with valid values
       if (
-        CONFIG.emailjs.publicKey === "YOUR_PUBLIC_KEY" ||
+        CONFIG.emailjs.publicKey === "Uy9y355BvksGDJGhe" ||
         !CONFIG.emailjs.publicKey ||
         CONFIG.emailjs.publicKey.length < 10
       ) {
