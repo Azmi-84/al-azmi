@@ -254,9 +254,13 @@ const EmailSubmission = {
         return false;
       }
 
-      emailjs.init({
-        publicKey: CONFIG.emailjs.publicKey,
-      });
+      // Use the self-executing function pattern as per EmailJS docs
+      (function () {
+        emailjs.init({
+          publicKey: CONFIG.emailjs.publicKey,
+        });
+      })();
+
       console.log("EmailJS initialized successfully");
       return true;
     } catch (error) {
