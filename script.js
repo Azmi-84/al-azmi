@@ -1,111 +1,123 @@
-// Configuration object directly embedded in script.js
+// Configuration and Constants
 const CONFIG = {
-  // EmailJS configuration
   emailjs: {
-    publicKey: "Uy9y355BvksGDJGhe", // Replace with your actual EmailJS public key
-    serviceId: "service_saocigo", // Replace with your EmailJS service ID
-    templateId: "template_rr1kng1", // Replace with your EmailJS template ID
+    publicKey: "Uy9y355BvksGDJGhe",
+    serviceId: "service_saocigo",
+    templateId: "template_rr1kng1",
+  },
+  selectors: {
+    mobileMenuButton: "#mobile-menu-button",
+    mobileMenu: "#mobile-menu",
+    navLinks: ".nav-link",
+    sections: "section",
+    filterButtons: ".project-filter",
+    projectCards: ".project-card",
+    contactForm: "#contactForm",
+    formResponse: "#form-response",
+    projectDetailsBtns: ".project-details-btn",
+    projectModal: "#project-modal",
+    backToTopButton: "#back-to-top",
   },
 };
 
-// Initialize AOS animation library
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("Document loaded, initializing components...");
-
-  // Initialize AOS animations - moved this right to the top for visibility
-  if (typeof AOS !== "undefined") {
-    console.log("AOS available, initializing...");
-    AOS.init({
-      duration: 800,
-      easing: "ease-in-out",
-      once: true,
-      mirror: false,
+// Utility Functions
+const utils = {
+  smoothScroll(targetElement, offset = 80) {
+    window.scrollTo({
+      top: targetElement.offsetTop - offset,
+      behavior: "smooth",
     });
-  } else {
-    console.error(
-      "AOS is not defined! Check if the AOS script is loading correctly."
+  },
+
+  debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+  },
+};
+
+// Mobile Menu Module
+const MobileMenu = {
+  init() {
+    const menuButton = document.querySelector(
+      CONFIG.selectors.mobileMenuButton
     );
-  }
+    const mobileMenu = document.querySelector(CONFIG.selectors.mobileMenu);
 
-  // Initialize EmailJS if configured
-  try {
-    // Ensure EmailJS script is loaded
-    if (typeof emailjs !== "undefined") {
-      // Use the new initialization method with object parameter
-      emailjs.init({
-        publicKey: CONFIG.emailjs.publicKey,
-      });
-      console.log("EmailJS initialized successfully");
-    } else {
-      console.error(
-        "EmailJS library not loaded. Make sure to include the EmailJS script."
-      );
-    }
-  } catch (e) {
-    console.error("Error initializing EmailJS:", e);
-  }
+    if (!menuButton || !mobileMenu) return;
 
-  console.log("Setting up UI interactions...");
+    menuButton.addEventListener("click", () => {
+      const isExpanded = menuButton.getAttribute("aria-expanded") === "true";
 
-  // Mobile menu toggle functionality
-  const mobileMenuButton = document.getElementById("mobile-menu-button");
-  const mobileMenu = document.getElementById("mobile-menu");
+      menuButton.setAttribute("aria-expanded", !isExpanded);
 
-  if (mobileMenuButton && mobileMenu) {
-    mobileMenuButton.addEventListener("click", function () {
-      const expanded = this.getAttribute("aria-expanded") === "true";
-      this.setAttribute("aria-expanded", !expanded);
-
-      if (expanded) {
-        mobileMenu.classList.add("mobile-menu-enter");
-        mobileMenu.classList.remove("mobile-menu-enter-active");
-
-        setTimeout(() => {
-          mobileMenu.classList.add("hidden");
-        }, 300);
+      if (isExpanded) {
+        this.closeMenu(mobileMenu);
       } else {
-        mobileMenu.classList.remove("hidden");
-
-        // Force reflow to enable transition
-        mobileMenu.offsetWidth;
-
-        mobileMenu.classList.add("mobile-menu-enter");
-        mobileMenu.classList.add("mobile-menu-enter-active");
+        this.openMenu(mobileMenu);
       }
     });
-  } else {
-    console.warn("Mobile menu elements not found");
-  }
+  },
 
-  // Smooth scrolling for navigation links
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", function (e) {
-      e.preventDefault();
-      const targetId = this.getAttribute("href");
+  openMenu(menu) {
+    menu.classList.remove("hidden");
+    menu.offsetWidth; // Force reflow
+    menu.classList.add("mobile-menu-enter", "mobile-menu-enter-active");
+  },
 
-      if (targetId === "#") return;
+  closeMenu(menu) {
+    menu.classList.add("mobile-menu-enter");
+    menu.classList.remove("mobile-menu-enter-active");
 
-      const targetElement = document.querySelector(targetId);
-      if (targetElement) {
-        window.scrollTo({
-          top: targetElement.offsetTop - 80, // Offset for fixed header
-          behavior: "smooth",
-        });
+    setTimeout(() => {
+      menu.classList.add("hidden");
+    }, 300);
+  },
+};
 
-        // Close mobile menu if open
-        if (!mobileMenu.classList.contains("hidden")) {
-          mobileMenuButton.click();
+// Navigation Module
+const Navigation = {
+  init() {
+    this.setupSmoothScroll();
+    this.setupActiveNavHighlight();
+  },
+
+  setupSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener("click", (e) => {
+        e.preventDefault();
+        const targetId = anchor.getAttribute("href");
+
+        if (targetId === "#") return;
+
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          utils.smoothScroll(targetElement);
+
+          // Close mobile menu if open
+          const mobileMenu = document.querySelector(
+            CONFIG.selectors.mobileMenu
+          );
+          const mobileMenuButton = document.querySelector(
+            CONFIG.selectors.mobileMenuButton
+          );
+          if (mobileMenu && !mobileMenu.classList.contains("hidden")) {
+            mobileMenuButton.click();
+          }
         }
-      }
+      });
     });
-  });
+  },
 
-  // Active navigation link highlighting
-  const sections = document.querySelectorAll("section");
-  const navLinks = document.querySelectorAll(".nav-link");
+  setupActiveNavHighlight() {
+    const sections = document.querySelectorAll(CONFIG.selectors.sections);
+    const navLinks = document.querySelectorAll(CONFIG.selectors.navLinks);
 
-  if (sections.length > 0 && navLinks.length > 0) {
-    window.addEventListener("scroll", () => {
+    if (sections.length === 0 || navLinks.length === 0) return;
+
+    const scrollHandler = utils.debounce(() => {
       let current = "";
 
       sections.forEach((section) => {
@@ -113,8 +125,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const sectionHeight = section.clientHeight;
 
         if (
-          pageYOffset >= sectionTop &&
-          pageYOffset < sectionTop + sectionHeight
+          window.pageYOffset >= sectionTop &&
+          window.pageYOffset < sectionTop + sectionHeight
         ) {
           current = section.getAttribute("id");
         }
@@ -126,185 +138,212 @@ document.addEventListener("DOMContentLoaded", function () {
           link.classList.add("text-secondary");
         }
       });
-    });
-  }
+    }, 100);
 
-  // Project filtering functionality
-  const filterButtons = document.querySelectorAll(".project-filter");
-  const projectCards = document.querySelectorAll(".project-card");
+    window.addEventListener("scroll", scrollHandler);
+  },
+};
 
-  if (filterButtons.length > 0 && projectCards.length > 0) {
-    console.log("Setting up project filtering...");
+// Project Filtering Module
+const ProjectFilter = {
+  init() {
+    const filterButtons = document.querySelectorAll(
+      CONFIG.selectors.filterButtons
+    );
+    const projectCards = document.querySelectorAll(
+      CONFIG.selectors.projectCards
+    );
+
+    if (filterButtons.length === 0 || projectCards.length === 0) return;
+
     filterButtons.forEach((button) => {
-      button.addEventListener("click", function () {
-        const filter = this.getAttribute("data-filter");
-
-        // Update ARIA attributes for accessibility
-        filterButtons.forEach((btn) => {
-          // Update visual styling
-          btn.classList.remove("active", "bg-primary", "text-white");
-          btn.classList.add("bg-gray-200");
-
-          // Update ARIA attributes
-          btn.setAttribute("aria-selected", "false");
-        });
-
-        // Add active class to clicked button
-        this.classList.add("active", "bg-primary", "text-white");
-        this.classList.remove("bg-gray-200");
-        this.setAttribute("aria-selected", "true");
-
-        // Filter projects based on category
-        projectCards.forEach((card) => {
-          // Show all cards if filter is "all"
-          if (filter === "all") {
-            card.style.display = "block";
-            setTimeout(() => {
-              card.classList.remove("opacity-0", "scale-95");
-              card.classList.add("opacity-100", "scale-100");
-            }, 50);
-            return;
-          }
-
-          // Otherwise, filter by category
-          const categories = card.getAttribute("data-category").split(" ");
-
-          if (categories.includes(filter)) {
-            card.style.display = "block";
-            setTimeout(() => {
-              card.classList.remove("opacity-0", "scale-95");
-              card.classList.add("opacity-100", "scale-100");
-            }, 50);
-          } else {
-            card.classList.remove("opacity-100", "scale-100");
-            card.classList.add("opacity-0", "scale-95");
-            setTimeout(() => {
-              card.style.display = "none";
-            }, 300);
-          }
-        });
-
-        // Announce filter change for screen readers
-        const filterAnnouncement = document.createElement("div");
-        filterAnnouncement.setAttribute("aria-live", "polite");
-        filterAnnouncement.classList.add("sr-only");
-      });
+      button.addEventListener("click", () =>
+        this.filterProjects(button, projectCards)
+      );
     });
-  }
+  },
 
-  // Add contact form submission handler
-  const contactForm = document.getElementById("contactForm");
-  const formResponse = document.getElementById("form-response");
+  filterProjects(activeButton, projectCards) {
+    const filter = activeButton.getAttribute("data-filter");
 
-  if (contactForm && formResponse) {
-    contactForm.addEventListener("submit", function (event) {
-      event.preventDefault();
-
-      // Validate form inputs
-      const name = document.getElementById("name");
-      const email = document.getElementById("email");
-      const message = document.getElementById("message");
-
-      // Basic validation
-      if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
-        formResponse.classList.remove("hidden", "bg-blue-100", "bg-green-100");
-        formResponse.classList.add("bg-red-100");
-        formResponse.textContent = "Please fill out all fields.";
-        formResponse.setAttribute("aria-hidden", "false");
-        return;
-      }
-
-      // Prepare template parameters
-      const templateParams = {
-        from_name: name.value,
-        from_email: email.value,
-        message: message.value,
-      };
-
-      // Show loading state
-      formResponse.classList.remove("hidden", "bg-green-100", "bg-red-100");
-      formResponse.classList.add("bg-blue-100");
-      formResponse.textContent = "Sending your message...";
-      formResponse.setAttribute("aria-hidden", "false");
-
-      // Send email using EmailJS
-      emailjs
-        .send(
-          CONFIG.emailjs.serviceId,
-          CONFIG.emailjs.templateId,
-          templateParams
-        )
-        .then(
-          function () {
-            // Success message
-            formResponse.classList.remove("bg-blue-100", "bg-red-100");
-            formResponse.classList.add("bg-green-100");
-            formResponse.textContent =
-              "Your message has been sent successfully!";
-            contactForm.reset();
-          },
-          function (error) {
-            // Detailed error message
-            formResponse.classList.remove("bg-blue-100", "bg-green-100");
-            formResponse.classList.add("bg-red-100");
-
-            // More specific error handling
-            if (error.status === 400) {
-              formResponse.textContent =
-                "Invalid form submission. Please check your inputs.";
-            } else if (error.status === 403) {
-              formResponse.textContent =
-                "Service authentication failed. Please contact support.";
-            } else {
-              formResponse.textContent =
-                "Sorry, there was an error sending your message. Please try again later.";
-            }
-
-            console.error("EmailJS error:", error);
-          }
-        )
-        .catch(function (err) {
-          // Catch any additional errors during sending
-          formResponse.classList.remove("bg-blue-100", "bg-green-100");
-          formResponse.classList.add("bg-red-100");
-          formResponse.textContent =
-            "An unexpected error occurred. Please try again.";
-          console.error("Unexpected error:", err);
-        });
+    // Reset all filter buttons
+    document.querySelectorAll(CONFIG.selectors.filterButtons).forEach((btn) => {
+      btn.classList.remove("active", "bg-primary", "text-white");
+      btn.classList.add("bg-gray-200");
+      btn.setAttribute("aria-selected", "false");
     });
-  }
 
-  // Back to top button functionality
-  const backToTopButton = document.getElementById("back-to-top");
+    // Activate current button
+    activeButton.classList.add("active", "bg-primary", "text-white");
+    activeButton.classList.remove("bg-gray-200");
+    activeButton.setAttribute("aria-selected", "true");
 
-  if (backToTopButton) {
-    window.addEventListener("scroll", function () {
-      if (window.pageYOffset > 300) {
-        backToTopButton.classList.remove("opacity-0", "invisible");
-        backToTopButton.classList.add("opacity-100");
+    // Filter projects
+    projectCards.forEach((card) => {
+      const categories = card.getAttribute("data-category").split(" ");
+
+      if (filter === "all" || categories.includes(filter)) {
+        this.showCard(card);
       } else {
-        backToTopButton.classList.remove("opacity-100");
-        backToTopButton.classList.add("opacity-0", "invisible");
+        this.hideCard(card);
       }
     });
+  },
 
-    backToTopButton.addEventListener("click", function () {
+  showCard(card) {
+    card.style.display = "block";
+    setTimeout(() => {
+      card.classList.remove("opacity-0", "scale-95");
+      card.classList.add("opacity-100", "scale-100");
+    }, 50);
+  },
+
+  hideCard(card) {
+    card.classList.remove("opacity-100", "scale-100");
+    card.classList.add("opacity-0", "scale-95");
+    setTimeout(() => {
+      card.style.display = "none";
+    }, 300);
+  },
+};
+
+// Email Submission Module
+const EmailSubmission = {
+  init() {
+    const contactForm = document.querySelector(CONFIG.selectors.contactForm);
+    const formResponse = document.querySelector(CONFIG.selectors.formResponse);
+
+    if (!contactForm || !formResponse) return;
+
+    // Initialize EmailJS
+    this.initEmailJS();
+
+    contactForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      this.submitForm(contactForm, formResponse);
+    });
+  },
+
+  initEmailJS() {
+    try {
+      if (typeof emailjs !== "undefined") {
+        emailjs.init({
+          publicKey: CONFIG.emailjs.publicKey,
+        });
+        console.log("EmailJS initialized successfully");
+      } else {
+        console.error("EmailJS library not loaded");
+      }
+    } catch (error) {
+      console.error("EmailJS initialization error:", error);
+    }
+  },
+
+  submitForm(form, responseElement) {
+    const name = form.querySelector("#name");
+    const email = form.querySelector("#email");
+    const message = form.querySelector("#message");
+
+    if (!this.validateForm(name, email, message)) {
+      this.showErrorMessage(responseElement, "Please fill out all fields.");
+      return;
+    }
+
+    const templateParams = {
+      from_name: name.value,
+      from_email: email.value,
+      message: message.value,
+    };
+
+    this.showLoadingState(responseElement);
+
+    emailjs
+      .send(CONFIG.emailjs.serviceId, CONFIG.emailjs.templateId, templateParams)
+      .then(() => {
+        this.showSuccessMessage(responseElement);
+        form.reset();
+      })
+      .catch((error) => {
+        this.handleSubmissionError(responseElement, error);
+      });
+  },
+
+  validateForm(name, email, message) {
+    return name.value.trim() && email.value.trim() && message.value.trim();
+  },
+
+  showLoadingState(responseElement) {
+    responseElement.className = "my-4 p-4 rounded-md bg-blue-100";
+    responseElement.classList.remove("hidden");
+    responseElement.textContent = "Sending your message...";
+    responseElement.setAttribute("aria-hidden", "false");
+  },
+
+  showSuccessMessage(responseElement) {
+    responseElement.className = "my-4 p-4 rounded-md bg-green-100";
+    responseElement.textContent = "Your message has been sent successfully!";
+  },
+
+  showErrorMessage(responseElement, message) {
+    responseElement.className = "my-4 p-4 rounded-md bg-red-100";
+    responseElement.classList.remove("hidden");
+    responseElement.textContent = message;
+    responseElement.setAttribute("aria-hidden", "false");
+  },
+
+  handleSubmissionError(responseElement, error) {
+    console.error("EmailJS error:", error);
+
+    const errorMessages = {
+      400: "Invalid form submission. Please check your inputs.",
+      403: "Service authentication failed. Please contact support.",
+      default:
+        "Sorry, there was an error sending your message. Please try again later.",
+    };
+
+    const errorMessage = errorMessages[error.status] || errorMessages.default;
+    this.showErrorMessage(responseElement, errorMessage);
+  },
+};
+
+// Back to Top Button Module
+const BackToTopButton = {
+  init() {
+    const backToTopButton = document.querySelector(
+      CONFIG.selectors.backToTopButton
+    );
+    if (!backToTopButton) return;
+
+    window.addEventListener(
+      "scroll",
+      utils.debounce(() => {
+        this.toggleVisibility(backToTopButton);
+      }, 100)
+    );
+
+    backToTopButton.addEventListener("click", () => {
       window.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     });
-  }
+  },
 
-  // Modal functionality for project details
-  const projectDetailsBtns = document.querySelectorAll(".project-details-btn");
-  const projectModal = document.getElementById("project-modal");
-  const closeModal = document.getElementById("close-modal");
-  const modalTitle = document.getElementById("modal-title");
-  const modalContent = document.getElementById("modal-content");
+  toggleVisibility(button) {
+    if (window.pageYOffset > 300) {
+      button.classList.remove("opacity-0", "invisible");
+      button.classList.add("opacity-100");
+    } else {
+      button.classList.remove("opacity-100");
+      button.classList.add("opacity-0", "invisible");
+    }
+  },
+};
 
-  // Project details data - could be moved to a JSON file if it grows too large
-  const projectDetails = {
+// Project Modal Module
+const ProjectModal = {
+  // Using the original project details to maintain consistency
+  projectDetails: {
     project1: {
       title: "Material Microstructure Analysis",
       content: `
@@ -386,58 +425,96 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       `,
     },
-  };
+  },
 
-  if (projectDetailsBtns.length > 0 && projectModal) {
-    projectDetailsBtns.forEach((btn) => {
-      btn.addEventListener("click", function () {
-        // Find the parent project card and get its ID
-        const projectCard = this.closest(".project-card");
+  init() {
+    const projectDetailsBtns = document.querySelectorAll(
+      CONFIG.selectors.projectDetailsBtns
+    );
+    const projectModal = document.querySelector(CONFIG.selectors.projectModal);
+
+    if (!projectModal || projectDetailsBtns.length === 0) return;
+
+    this.setupModalEvents(projectDetailsBtns, projectModal);
+  },
+
+  setupModalEvents(buttons, modal) {
+    const closeModal = modal.querySelector("#close-modal");
+    const modalTitle = modal.querySelector("#modal-title");
+    const modalContent = modal.querySelector("#modal-content");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const projectCard = btn.closest(".project-card");
         const projectId = projectCard.getAttribute("data-project-id");
-
-        // Get project details from our data object
-        const project = projectDetails[projectId];
+        const project = this.projectDetails[projectId];
 
         if (project) {
-          // Update modal content
-          modalTitle.textContent = project.title;
-          modalContent.innerHTML = project.content;
-
-          // Show modal
-          projectModal.classList.remove("hidden");
-          document.body.style.overflow = "hidden"; // Prevent scrolling
-
-          // Focus on the modal for accessibility
-          setTimeout(() => {
-            closeModal.focus();
-          }, 100);
+          this.openModal(modal, modalTitle, modalContent, project);
         }
       });
     });
 
-    // Close modal functionality
-    closeModal.addEventListener("click", function () {
-      projectModal.classList.add("hidden");
-      document.body.style.overflow = ""; // Restore scrolling
+    closeModal.addEventListener("click", () => this.closeModal(modal));
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) this.closeModal(modal);
     });
 
-    // Close modal on background click
-    projectModal.addEventListener("click", function (event) {
-      if (event.target === projectModal) {
-        closeModal.click();
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+        this.closeModal(modal);
       }
     });
+  },
 
-    // Close modal on ESC key
-    document.addEventListener("keydown", function (event) {
-      if (
-        event.key === "Escape" &&
-        !projectModal.classList.contains("hidden")
-      ) {
-        closeModal.click();
-      }
-    });
-  }
+  openModal(modal, titleEl, contentEl, project) {
+    titleEl.textContent = project.title;
+    contentEl.innerHTML = project.content;
+    modal.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    // Focus on the close button for accessibility
+    setTimeout(() => {
+      modal.querySelector("#close-modal").focus();
+    }, 100);
+  },
+
+  closeModal(modal) {
+    modal.classList.add("hidden");
+    document.body.style.overflow = "";
+  },
+};
+
+// AOS Animation Initialization
+const AOSInitializer = {
+  init() {
+    if (typeof AOS !== "undefined") {
+      console.log("AOS available, initializing...");
+      AOS.init({
+        duration: 800,
+        easing: "ease-in-out",
+        once: true,
+        mirror: false,
+      });
+    } else {
+      console.error(
+        "AOS is not defined! Check if the AOS script is loading correctly."
+      );
+    }
+  },
+};
+
+// Main Initialization
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Document loaded, initializing components...");
+
+  AOSInitializer.init();
+  MobileMenu.init();
+  Navigation.init();
+  ProjectFilter.init();
+  EmailSubmission.init();
+  BackToTopButton.init();
+  ProjectModal.init();
 
   console.log("Website initialization complete.");
 });
