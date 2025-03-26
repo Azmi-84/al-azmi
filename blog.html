@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Abdullah al Azmi's research blog on Material Science, AI/ML, and Engineering">
     <title>Abdullah al Azmi | Blog</title>
     <!-- Add Noto Sans CJK KR Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,7 +14,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-    <link rel="stylesheet" href="blog.css">
     <script>
         tailwind.config = {
             theme: {
@@ -25,16 +25,190 @@
                     },
                     fontFamily: {
                         sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    typography: {
+                        DEFAULT: {
+                            css: {
+                                color: 'var(--tw-prose-body)',
+                                maxWidth: '65ch',
+                                '[class~="lead"]': {
+                                    color: 'var(--tw-prose-lead)',
+                                },
+                                a: {
+                                    color: '#0EA5E9',
+                                    textDecoration: 'underline',
+                                    fontWeight: '500',
+                                },
+                                strong: {
+                                    color: 'var(--tw-prose-bold)',
+                                    fontWeight: '600',
+                                },
+                                h1: {
+                                    color: '#1E3A8A',
+                                    fontWeight: '800',
+                                },
+                                h2: {
+                                    color: '#1E3A8A',
+                                    fontWeight: '700',
+                                },
+                                h3: {
+                                    color: '#1E3A8A',
+                                    fontWeight: '600',
+                                },
+                                h4: {
+                                    color: '#1E3A8A',
+                                    fontWeight: '600',
+                                },
+                                'h1, h2': {
+                                    letterSpacing: '-0.025em',
+                                },
+                                'h2, h3': {
+                                    'margin-top': '2em',
+                                    'margin-bottom': '0.75em',
+                                },
+                                blockquote: {
+                                    borderLeftColor: '#E5E7EB',
+                                },
+                                hr: {
+                                    borderColor: 'var(--tw-prose-hr)',
+                                },
+                                'ol > li::marker': {
+                                    color: 'var(--tw-prose-counters)',
+                                },
+                                'ul > li::marker': {
+                                    color: '#0EA5E9',
+                                },
+                                'ul > li, ol > li': {
+                                    marginTop: '0.375em',
+                                    marginBottom: '0.375em',
+                                },
+                                code: {
+                                    color: 'var(--tw-prose-code)',
+                                    backgroundColor: '#F3F4F6',
+                                    borderRadius: '0.25rem',
+                                    paddingLeft: '0.25rem',
+                                    paddingRight: '0.25rem',
+                                    paddingTop: '0.125rem',
+                                    paddingBottom: '0.125rem',
+                                    fontFamily: 'ui-monospace, monospace',
+                                },
+                                pre: {
+                                    color: 'var(--tw-prose-pre-code)',
+                                    backgroundColor: '#1F2937',
+                                    borderRadius: '0.375rem',
+                                    padding: '1rem',
+                                    overflowX: 'auto',
+                                },
+                                'pre code': {
+                                    backgroundColor: 'transparent',
+                                    borderWidth: '0',
+                                    borderRadius: '0',
+                                    padding: '0',
+                                    fontWeight: '400',
+                                    color: 'inherit',
+                                },
+                            },
+                        },
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 0.3s ease-in-out',
+                        fadeOut: 'fadeOut 0.3s ease-in-out',
+                        pulse: 'pulse 2s infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeOut: {
+                            '0%': { opacity: '1', transform: 'translateY(0)' },
+                            '100%': { opacity: '0', transform: 'translateY(-10px)' }
+                        },
+                        pulse: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' }
+                        }
                     }
                 },
             },
+            plugins: [
+                function ({ addBase, theme }) {
+                    addBase({
+                        '.prose': {
+                            maxWidth: 'none',
+                        },
+                    })
+                },
+            ],
         };
     </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* Common focus styles for interactive elements */
+            .focus-ring {
+                @apply focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2;
+            }
+            
+            /* Mobile menu animations */
+            .mobile-menu-enter {
+                @apply transition-all duration-300 ease-out opacity-0 -translate-y-2;
+            }
+            .mobile-menu-enter-active {
+                @apply opacity-100 translate-y-0;
+            }
+            .mobile-menu-exit {
+                @apply transition-all duration-200 ease-in opacity-100 translate-y-0;
+            }
+            .mobile-menu-exit-active {
+                @apply opacity-0 -translate-y-2;
+            }
+            
+            /* Form input states */
+            .form-input {
+                @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary;
+            }
+            .form-input.error {
+                @apply border-red-500 focus:ring-red-500;
+            }
+            
+            /* Toast animation */
+            .toast-enter {
+                @apply transform transition-all duration-300 opacity-0 translate-y-2;
+            }
+            .toast-enter-active {
+                @apply opacity-100 translate-y-0;
+            }
+            .toast-exit {
+                @apply transform transition-all duration-300 opacity-100 translate-y-0;
+            }
+            .toast-exit-active {
+                @apply opacity-0 translate-y-2;
+            }
+            
+            /* Modal animations */
+            .modal-enter {
+                @apply transform transition duration-300 opacity-0 scale-95;
+            }
+            .modal-enter-active {
+                @apply opacity-100 scale-100;
+            }
+            
+            /* Loading spinner */
+            .spinner {
+                @apply animate-spin rounded-full border-t-2 border-b-2 border-secondary h-8 w-8;
+            }
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
     <!-- Accessibility skip navigation -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-white focus:z-50">Skip to
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-white focus:z-50 focus-ring">Skip to
         main content</a>
 
     <!-- Navigation -->
@@ -46,91 +220,372 @@
                             class="text-secondary">.dev</span></a>
                     <!-- Mobile menu button -->
                     <div class="md:hidden">
-                        <button id="mobile-menu-button"
-                            class="text-gray-600 hover:text-primary focus:outline-none focus:ring-2 focus:ring-secondary p-2 rounded"
+                        <button id="mobile-menu-button" class="text-gray-600 hover:text-primary focus-ring p-2 rounded"
                             aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle navigation menu">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                     </div>
                     <!-- Desktop Navigation -->
                     <div class="hidden md:flex space-x-8">
-                        <a href="index.html" class="nav-link">Home</a>
-                        <a href="index.html#about" class="nav-link">About</a>
-                        <a href="index.html#skills" class="nav-link">Skills</a>
-                        <a href="index.html#projects" class="nav-link">Projects</a>
-                        <a href="index.html#education" class="nav-link">Education</a>
-                        <a href="blog.html" class="nav-link text-secondary">Blog</a>
-                        <a href="index.html#contact" class="nav-link">Contact</a>
+                        <a href="index.html" class="relative transition-all duration-300 hover:text-secondary">Home</a>
+                        <a href="index.html#about"
+                            class="relative transition-all duration-300 hover:text-secondary">About</a>
+                        <a href="index.html#skills"
+                            class="relative transition-all duration-300 hover:text-secondary">Skills</a>
+                        <a href="index.html#projects"
+                            class="relative transition-all duration-300 hover:text-secondary">Projects</a>
+                        <a href="index.html#education"
+                            class="relative transition-all duration-300 hover:text-secondary">Education</a>
+                        <a href="blog.html" class="relative transition-all duration-300 text-secondary">Blog</a>
+                        <a href="index.html#contact"
+                            class="relative transition-all duration-300 hover:text-secondary">Contact</a>
                     </div>
                 </div>
-                <!-- Mobile Navigation -->
+                <!-- Mobile Navigation - Improved animation and accessibility -->
                 <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 border-t border-gray-100 pt-2">
-                    <a href="index.html" class="block py-2 nav-link">Home</a>
-                    <a href="index.html#about" class="block py-2 nav-link">About</a>
-                    <a href="index.html#skills" class="block py-2 nav-link">Skills</a>
-                    <a href="index.html#projects" class="block py-2 nav-link">Projects</a>
-                    <a href="index.html#education" class="block py-2 nav-link">Education</a>
-                    <a href="blog.html" class="block py-2 nav-link text-secondary">Blog</a>
-                    <a href="index.html#contact" class="block py-2 nav-link">Contact</a>
+                    <a href="index.html"
+                        class="block py-2 relative transition-all duration-300 hover:text-secondary">Home</a>
+                    <a href="index.html#about"
+                        class="block py-2 relative transition-all duration-300 hover:text-secondary">About</a>
+                    <a href="index.html#skills"
+                        class="block py-2 relative transition-all duration-300 hover:text-secondary">Skills</a>
+                    <a href="index.html#projects"
+                        class="block py-2 relative transition-all duration-300 hover:text-secondary">Projects</a>
+                    <a href="index.html#education"
+                        class="block py-2 relative transition-all duration-300 hover:text-secondary">Education</a>
+                    <a href="blog.html" class="block py-2 relative transition-all duration-300 text-secondary">Blog</a>
+                    <a href="index.html#contact"
+                        class="block py-2 relative transition-all duration-300 hover:text-secondary">Contact</a>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main id="main-content" class="pt-24 pb-16">
+    <!-- Hero Section with gradient background to match main page style -->
+    <section class="pt-28 pb-10 bg-gradient-to-br from-primary to-dark text-white relative">
         <div class="container mx-auto px-4 md:px-8">
-            <div class="flex items-center justify-between mb-8" data-aos="fade-right">
-                <h1 class="text-3xl md:text-4xl font-bold text-primary">My Blog</h1>
-                <button id="newPostBtn"
-                    class="bg-secondary hover:bg-blue-600 text-white py-2 px-6 rounded-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-secondary">
-                    <i class="fas fa-plus mr-2"></i> New Post
-                </button>
+            <div class="flex flex-col items-center text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4" data-aos="fade-up" data-aos-duration="800">My Research
+                    Blog</h1>
+                <p class="text-xl max-w-2xl" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
+                    Insights on Material Science, AI/ML, and Engineering
+                </p>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-0 transform">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"
+                class="h-12 w-full" fill="#f9fafb">
+                <path
+                    d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z">
+                </path>
+            </svg>
+        </div>
+    </section>
+
+    <main id="main-content" class="pb-16 flex-grow">
+        <div class="container mx-auto px-4 md:px-8 -mt-6">
+            <!-- Blog Header with Search -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl"
+                data-aos="fade-up">
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center w-full">
+                    <!-- Search box -->
+                    <div class="relative flex-grow">
+                        <input type="text" id="searchInput" placeholder="Search posts..." class="form-input pr-10"
+                            aria-label="Search posts">
+                        <button id="searchButton"
+                            class="absolute right-2 top-2.5 text-gray-400 hover:text-secondary focus-ring rounded-full p-1"
+                            aria-label="Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span class="sr-only">Search posts</span>
+                        </button>
+                    </div>
+
+                    <!-- New Post Button -->
+                    <button id="newPostBtn"
+                        class="bg-secondary hover:bg-blue-600 text-white py-2 px-6 rounded-md transition duration-300 
+                        focus-ring flex items-center gap-2 transform hover:-translate-y-1 w-full md:w-auto justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
+                            aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        New Post
+                    </button>
+                </div>
             </div>
 
-            <div id="postForm" class="hidden bg-white p-6 rounded-lg shadow-md mb-8" data-aos="fade-up">
-                <h2 id="formTitle" class="text-2xl font-bold mb-4 text-primary">Create New Post</h2>
-                <form id="blogPostForm">
+            <!-- Category filters - Now dynamic -->
+            <div class="mb-8" data-aos="fade-up">
+                <div id="categoryFilters" class="flex flex-wrap gap-2 justify-center">
+                    <button
+                        class="category-filter active px-4 py-2 rounded-md bg-primary text-white transition-all hover:bg-secondary focus-ring"
+                        data-category="all" aria-pressed="true">
+                        All Posts
+                    </button>
+                    <!-- Other category filters will be dynamically generated based on posts -->
+                </div>
+            </div>
+
+            <!-- Post Form - Improved validation and accessibility -->
+            <div id="postForm" class="hidden bg-white p-6 rounded-lg shadow-md mb-8 transition-all duration-300"
+                data-aos="fade-up">
+                <h2 id="formTitle" class="text-2xl font-bold mb-4 text-primary relative pb-3">
+                    Create New Post
+                    <span class="absolute bottom-0 left-0 w-16 h-1 bg-secondary"></span>
+                </h2>
+                <form id="blogPostForm" novalidate>
                     <input type="hidden" id="postId">
                     <div class="mb-4">
-                        <label for="postTitle" class="block mb-2 font-medium">Title</label>
-                        <input type="text" id="postTitle"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary"
-                            required>
+                        <label for="postTitle" class="block mb-2 font-medium">Title <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="postTitle" class="form-input" required aria-required="true">
+                        <div id="titleError" class="text-red-500 text-sm mt-1 hidden"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="categoryInput" class="block mb-2 font-medium">Categories</label>
+                        <div class="flex flex-col space-y-3">
+                            <!-- Category input with add button -->
+                            <div class="flex space-x-2">
+                                <input type="text" id="categoryInput"
+                                    placeholder="Enter category (e.g., Materials, AI, Education)" class="form-input">
+                                <button type="button" id="addCategoryBtn" class="bg-secondary hover:bg-blue-600 text-white py-2 px-4 rounded-md transition duration-300 
+                                    focus-ring flex-shrink-0">
+                                    Add
+                                </button>
+                            </div>
+
+                            <!-- Selected categories tags -->
+                            <div id="selectedCategories" class="flex flex-wrap gap-2 min-h-[2rem] pt-2">
+                                <!-- Selected categories will appear here as tags -->
+                            </div>
+
+                            <!-- Common category suggestions -->
+                            <div class="pt-3 border-t border-gray-100">
+                                <p class="text-sm text-gray-500 mb-2">Common categories:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button"
+                                        class="category-suggestion px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors focus-ring"
+                                        data-category="Materials">Materials</button>
+                                    <button type="button"
+                                        class="category-suggestion px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors focus-ring"
+                                        data-category="AI & ML">AI & ML</button>
+                                    <button type="button"
+                                        class="category-suggestion px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors focus-ring"
+                                        data-category="Engineering">Engineering</button>
+                                    <button type="button"
+                                        class="category-suggestion px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors focus-ring"
+                                        data-category="Research">Research</button>
+                                    <button type="button"
+                                        class="category-suggestion px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors focus-ring"
+                                        data-category="Education">Education</button>
+                                    <button type="button"
+                                        class="category-suggestion px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors focus-ring"
+                                        data-category="Technology">Technology</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-6">
-                        <label for="postContent" class="block mb-2 font-medium">Content (Markdown supported)</label>
-                        <div class="mb-2 text-sm text-gray-600">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Supports basic Markdown: **bold**, *italic*, # headings, ```code blocks```, etc.
+                        <label for="postContent" class="block mb-2 font-medium">Content (Markdown supported) <span
+                                class="text-red-500">*</span></label>
+                        <div class="mb-2 text-sm text-gray-600 flex items-center bg-blue-50 p-3 rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5 text-secondary flex-shrink-0"
+                                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Supports Markdown: **bold**, *italic*, # headings, ```code blocks```, etc.
                         </div>
-                        <textarea id="postContent" rows="10"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary font-mono"
-                            required></textarea>
+                        <div class="border border-gray-300 rounded-md overflow-hidden shadow-sm">
+                            <ul class="flex border-b bg-gray-50" role="tablist">
+                                <li class="px-4 py-2 cursor-pointer text-sm text-secondary border-b-2 border-secondary font-medium"
+                                    id="writeTab" role="tab" aria-selected="true" aria-controls="writeContent">Write
+                                </li>
+                                <li class="px-4 py-2 cursor-pointer text-sm text-gray-700 hover:text-secondary"
+                                    id="previewTab" role="tab" aria-selected="false" aria-controls="previewContent">
+                                    Preview</li>
+                            </ul>
+                            <div id="writeContent" class="block" role="tabpanel" aria-labelledby="writeTab">
+                                <textarea id="postContent" rows="10"
+                                    class="w-full px-4 py-2 border-0 focus:outline-none focus:ring-0 font-mono" required
+                                    aria-required="true"></textarea>
+                                <div id="contentError" class="text-red-500 text-sm p-2 hidden"></div>
+                            </div>
+                            <div id="previewContent" class="hidden p-4 prose max-w-none" role="tabpanel"
+                                aria-labelledby="previewTab">
+                                <!-- Preview content will be displayed here -->
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-end space-x-4">
+                    <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
                         <button type="button" id="cancelBtn"
-                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300">
+                            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300 flex items-center justify-center gap-2 focus-ring">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
                             Cancel
                         </button>
-                        <button type="submit"
-                            class="bg-primary hover:bg-blue-800 text-white px-6 py-2 rounded-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button type="submit" id="submitButton" class="bg-primary hover:bg-blue-800 text-white px-6 py-2 rounded-md transition duration-300 
+                            focus-ring flex items-center justify-center gap-2 transform hover:-translate-y-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
                             Save Post
                         </button>
                     </div>
                 </form>
             </div>
 
+            <!-- Loading State - Improved animation -->
+            <div id="loadingState" class="hidden">
+                <div class="flex justify-center items-center py-20 flex-col gap-4">
+                    <div class="spinner"></div>
+                    <p class="text-gray-600">Loading posts...</p>
+                </div>
+            </div>
+
+            <!-- Network Error Message - Enhanced visibility -->
+            <div id="networkError"
+                class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-md mb-6 flex items-start shadow-md animate-fadeIn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20"
+                    fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                <div>
+                    <p class="font-medium">Connection Error</p>
+                    <p class="text-sm mt-1">Unable to connect to the database. Your posts will be stored locally until
+                        connection is restored.</p>
+                    <button class="text-sm mt-2 text-red-800 underline focus-ring" id="dismissErrorBtn">Dismiss</button>
+                </div>
+            </div>
+
+            <!-- Blog Posts Container with loading state -->
             <div id="blogPosts" class="space-y-8" data-aos="fade-up" data-aos-delay="100">
                 <!-- Blog posts will be loaded here dynamically -->
-                <div class="text-center py-16 text-gray-500 italic">
+                <div class="text-center py-16 text-gray-500 italic" id="emptyState">
                     No posts yet. Be the first to create a post!
                 </div>
+            </div>
+
+            <!-- Pagination - Improved for mobile -->
+            <div id="pagination" class="hidden mt-12 flex justify-center" aria-label="Pagination">
+                <nav class="flex flex-wrap items-center space-x-1 sm:space-x-2">
+                    <button id="prevPage"
+                        class="px-3 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
+                        aria-label="Previous page">
+                        <span class="sr-only">Previous page</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
+                            aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div id="pageNumbers" class="flex flex-wrap space-x-1 sm:space-x-2">
+                        <!-- Page numbers will be inserted here -->
+                    </div>
+                    <button id="nextPage"
+                        class="px-3 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
+                        aria-label="Next page">
+                        <span class="sr-only">Next page</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"
+                            aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </nav>
             </div>
         </div>
     </main>
 
+    <!-- Toast Notification - Enhanced animation -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg transform transition-all duration-300 opacity-0 translate-y-2 pointer-events-none flex items-center z-50">
+        <span id="toastMessage">Message saved successfully!</span>
+        <button class="ml-3 text-white hover:text-gray-200 focus-ring rounded" id="dismissToast"
+            aria-label="Dismiss notification">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Confirmation Dialog - Improved focus management -->
+    <div id="confirmDialog" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+        role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl animate-fadeIn"></div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-4" id="dialogTitle">Confirmation</h3>
+        <p id="dialogMessage" class="text-gray-700 mb-6">Are you sure you want to delete this post? This action
+            cannot be undone.</p>
+        <div class="flex flex-col-reverse sm:flex-row justify-end space-y-3 space-y-reverse sm:space-y-0 sm:space-x-4">
+            <button id="cancelDialog"
+                class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition duration-300 focus-ring">
+                Cancel
+            </button>
+            <button id="confirmDialogBtn"
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-300 focus-ring">
+                Delete
+            </button>
+        </div>
+    </div>
+    </div>
+
+    <!-- Post Detail Modal - Improved accessibility and UX -->
+    <div id="postDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+        role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div
+            class="bg-white rounded-lg max-w-3xl w-full mx-4 shadow-xl max-h-[90vh] overflow-hidden flex flex-col animate-fadeIn">
+            <div class="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
+                <h3 class="text-2xl font-bold text-primary" id="modalTitle">Post Title</h3>
+                <button id="closeDetailModal" class="text-gray-500 hover:text-gray-800 focus-ring rounded-full p-1"
+                    aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="overflow-auto p-6" id="modalContent">
+                <!-- Modal content will be displayed here -->
+            </div>
+            <div class="border-t p-4 flex justify-end sticky bottom-0 bg-white">
+                <button id="closeModalBtn"
+                    class="bg-primary hover:bg-blue-800 text-white px-6 py-2 rounded-md transition duration-300 focus-ring">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top button -->
+    <button id="back-to-top"
+        class="fixed bottom-8 right-8 bg-primary text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-secondary focus-ring z-30"
+        aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <!-- Footer -->
-    <footer class="bg-dark text-white py-8">
+    <footer class="bg-dark text-white py-8 mt-auto">
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
@@ -138,7 +593,8 @@
                     <p class="text-gray-400">Mechanical Engineer & AI Enthusiast</p>
                 </div>
                 <div class="text-center md:text-right">
-                    <p class="text-gray-400">&copy; 2025 Abdullah al Azmi. All rights reserved.</p>
+                    <p class="text-gray-400">&copy; <span id="current-year">2023</span> Abdullah al Azmi. All rights
+                        reserved.</p>
                 </div>
             </div>
         </div>
@@ -147,6 +603,79 @@
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="blog.js"></script>
+
+    <script>
+        // Update copyright year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Add back to top functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const backToTopButton = document.getElementById('back-to-top');
+
+            if (backToTopButton) {
+                const toggleBackToTopButton = () => {
+                    if (window.pageYOffset > 300) {
+                        backToTopButton.classList.remove('opacity-0', 'invisible');
+                    } else {
+                        backToTopButton.classList.add('opacity-0');
+                        // Use a separate timeout to add invisible class to prevent tabbing to the hidden button
+                        setTimeout(() => {
+                            if (window.pageYOffset <= 300) {
+                                backToTopButton.classList.add('invisible');
+                            }
+                        }, 300);
+                    }
+                };
+
+                // Throttle scroll event for better performance
+                let isScrolling = false;
+                window.addEventListener('scroll', function () {
+                    if (!isScrolling) {
+                        window.requestAnimationFrame(function () {
+                            toggleBackToTopButton();
+                            isScrolling = false;
+                        });
+                        isScrolling = true;
+                    }
+                });
+
+                backToTopButton.addEventListener('click', function () {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+
+                    // Focus on first focusable element after scrolling
+                    setTimeout(() => {
+                        const firstFocusable = document.querySelector('a[href], button, input, select, textarea');
+                        if (firstFocusable) {
+                            firstFocusable.focus();
+                        }
+                    }, 1000);
+                });
+            }
+
+            // Add dismiss button functionality for error message
+            const dismissErrorBtn = document.getElementById('dismissErrorBtn');
+            const networkError = document.getElementById('networkError');
+
+            if (dismissErrorBtn && networkError) {
+                dismissErrorBtn.addEventListener('click', function () {
+                    networkError.classList.add('hidden');
+                });
+            }
+
+            // Add dismiss button functionality for toast
+            const dismissToast = document.getElementById('dismissToast');
+            const toast = document.getElementById('toast');
+
+            if (dismissToast && toast) {
+                dismissToast.addEventListener('click', function () {
+                    toast.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
