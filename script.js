@@ -29,12 +29,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize EmailJS if configured
   try {
-    if (CONFIG.emailjs.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
-      emailjs.init(CONFIG.emailjs.publicKey);
-      console.log("EmailJS initialized");
+    // Ensure EmailJS script is loaded
+    if (typeof emailjs !== "undefined") {
+      // Use the new initialization method with object parameter
+      emailjs.init({
+        publicKey: CONFIG.emailjs.publicKey,
+      });
+      console.log("EmailJS initialized successfully");
     } else {
-      console.warn(
-        "EmailJS not initialized: please set your public key in the CONFIG object"
+      console.error(
+        "EmailJS library not loaded. Make sure to include the EmailJS script."
       );
     }
   } catch (e) {
@@ -192,20 +196,29 @@ document.addEventListener("DOMContentLoaded", function () {
   const contactForm = document.getElementById("contactForm");
   const formResponse = document.getElementById("form-response");
 
-  if (contactForm) {
+  if (contactForm && formResponse) {
     contactForm.addEventListener("submit", function (event) {
       event.preventDefault();
 
-      // Get form data
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const message = document.getElementById("message").value;
+      // Validate form inputs
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const message = document.getElementById("message");
+
+      // Basic validation
+      if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
+        formResponse.classList.remove("hidden", "bg-blue-100", "bg-green-100");
+        formResponse.classList.add("bg-red-100");
+        formResponse.textContent = "Please fill out all fields.";
+        formResponse.setAttribute("aria-hidden", "false");
+        return;
+      }
 
       // Prepare template parameters
       const templateParams = {
-        from_name: name,
-        from_email: email,
-        message: message,
+        from_name: name.value,
+        from_email: email.value,
+        message: message.value,
       };
 
       // Show loading state
@@ -231,14 +244,33 @@ document.addEventListener("DOMContentLoaded", function () {
             contactForm.reset();
           },
           function (error) {
-            // Error message
+            // Detailed error message
             formResponse.classList.remove("bg-blue-100", "bg-green-100");
             formResponse.classList.add("bg-red-100");
-            formResponse.textContent =
-              "Sorry, there was an error sending your message. Please try again later.";
+
+            // More specific error handling
+            if (error.status === 400) {
+              formResponse.textContent =
+                "Invalid form submission. Please check your inputs.";
+            } else if (error.status === 403) {
+              formResponse.textContent =
+                "Service authentication failed. Please contact support.";
+            } else {
+              formResponse.textContent =
+                "Sorry, there was an error sending your message. Please try again later.";
+            }
+
             console.error("EmailJS error:", error);
           }
-        );
+        )
+        .catch(function (err) {
+          // Catch any additional errors during sending
+          formResponse.classList.remove("bg-blue-100", "bg-green-100");
+          formResponse.classList.add("bg-red-100");
+          formResponse.textContent =
+            "An unexpected error occurred. Please try again.";
+          console.error("Unexpected error:", err);
+        });
     });
   }
 
