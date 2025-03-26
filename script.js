@@ -1,7 +1,8 @@
 // Configuration and Constants
 const CONFIG = {
   emailjs: {
-    publicKey: "Uy9y355BvksGDJGhe",
+    // Update this key with your valid EmailJS public key from https://dashboard.emailjs.com/admin/account
+    publicKey: "YOUR_PUBLIC_KEY", // Previous value was invalid: "Uy9y355BvksGDJGhe"
     serviceId: "service_saocigo",
     templateId: "template_rr1kng1",
   },
@@ -219,16 +220,38 @@ const EmailSubmission = {
     if (!contactForm || !formResponse) return;
 
     // Initialize EmailJS
-    this.initEmailJS();
+    const emailJSInitialized = this.initEmailJS();
 
     contactForm.addEventListener("submit", (event) => {
       event.preventDefault();
+
+      // Check if EmailJS is properly initialized before attempting submission
+      if (!emailJSInitialized && typeof emailjs === "undefined") {
+        this.showErrorMessage(
+          formResponse,
+          "Email service is not properly configured. Please try contacting directly via email."
+        );
+        return;
+      }
+
       this.submitForm(contactForm, formResponse);
     });
   },
 
   initEmailJS() {
     try {
+      // Check if service is configured with valid values
+      if (
+        CONFIG.emailjs.publicKey === "YOUR_PUBLIC_KEY" ||
+        !CONFIG.emailjs.publicKey ||
+        CONFIG.emailjs.publicKey.length < 10
+      ) {
+        console.error(
+          "EmailJS not configured: Please update the public key in the CONFIG object"
+        );
+        return false;
+      }
+
       if (typeof emailjs === "undefined") {
         console.error(
           "EmailJS library not loaded. Make sure to include the EmailJS script."
@@ -304,15 +327,29 @@ const EmailSubmission = {
   handleSubmissionError(responseElement, error) {
     console.error("EmailJS error:", error);
 
+    // More detailed error handling
     const errorMessages = {
-      400: "Invalid form submission. Please check your inputs.",
+      400: "Configuration error: The EmailJS Public Key is invalid. Please update your configuration.",
+      401: "Authentication error: Please check your EmailJS credentials.",
       403: "Service authentication failed. Please contact support.",
+      404: "The specified EmailJS template or service was not found.",
+      429: "Too many requests. Please try again later.",
+      500: "EmailJS server error. Please try again later.",
       default:
-        "Sorry, there was an error sending your message. Please try again later.",
+        "Sorry, there was an error sending your message. Please try again later or contact directly via email.",
     };
 
     const errorMessage = errorMessages[error.status] || errorMessages.default;
     this.showErrorMessage(responseElement, errorMessage);
+
+    // Show direct email as fallback when service fails
+    if (error.status === 400 || error.status === 401 || error.status === 403) {
+      const directEmail = document.createElement("p");
+      directEmail.className = "mt-2 text-sm";
+      directEmail.innerHTML =
+        'Please email me directly at <a href="mailto:azmi@iut-dhaka.edu" class="text-primary underline">azmi@iut-dhaka.edu</a>';
+      responseElement.appendChild(directEmail);
+    }
   },
 };
 
